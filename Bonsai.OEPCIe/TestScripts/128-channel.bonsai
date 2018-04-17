@@ -1,0 +1,292 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.3.0">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Ephys;assembly=Bonsai.Ephys" xmlns:q3="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns="https://horizongir.org/bonsai">
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:RHDDevice">
+          <q1:DeviceIndex>0</q1:DeviceIndex>
+          <q1:SampleRate>SampleRate30000Hz</q1:SampleRate>
+          <q1:FastSettle>false</q1:FastSettle>
+          <q1:LowerBandwidth>0.1</q1:LowerBandwidth>
+          <q1:UpperBandwidth>7500</q1:UpperBandwidth>
+          <q1:DspCutoffFrequency>1</q1:DspCutoffFrequency>
+          <q1:DspEnabled>true</q1:DspEnabled>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:AdcScale">
+          <q2:AdcType>Electrode</q2:AdcType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.AuxiliaryData</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:RHDDevice">
+          <q1:DeviceIndex>1</q1:DeviceIndex>
+          <q1:SampleRate>SampleRate30000Hz</q1:SampleRate>
+          <q1:FastSettle>false</q1:FastSettle>
+          <q1:LowerBandwidth>0.1</q1:LowerBandwidth>
+          <q1:UpperBandwidth>7500</q1:UpperBandwidth>
+          <q1:DspCutoffFrequency>1</q1:DspCutoffFrequency>
+          <q1:DspEnabled>true</q1:DspEnabled>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.EphysData</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.EphysData</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:AdcScale">
+          <q2:AdcType>Electrode</q2:AdcType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.AuxiliaryData</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:AdcScale">
+          <q2:AdcType>AuxiliaryInput</q2:AdcType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:AdcScale">
+          <q2:AdcType>AuxiliaryInput</q2:AdcType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Zip" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Zip" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:Concat">
+          <q3:Axis>0</q3:Axis>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:Concat">
+          <q3:Axis>0</q3:Axis>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:ElectricalStimulator">
+          <q1:DeviceIndex>1</q1:DeviceIndex>
+          <q1:Phase1CurrentuA>500</q1:Phase1CurrentuA>
+          <q1:Phase2CurrentuA>-500</q1:Phase2CurrentuA>
+          <q1:RestingCurrentuA>0</q1:RestingCurrentuA>
+          <q1:PulsePhase1DurationuSec>100</q1:PulsePhase1DurationuSec>
+          <q1:InterPulseIntervaluSec>0</q1:InterPulseIntervaluSec>
+          <q1:PulsePhase2DurationuSec>100</q1:PulsePhase2DurationuSec>
+          <q1:PulsePerioduSec>10000</q1:PulsePerioduSec>
+          <q1:BurstPulseCount>10</q1:BurstPulseCount>
+          <q1:InterBurstIntervaluSec>0</q1:InterBurstIntervaluSec>
+          <q1:TrainBurstCount>1</q1:TrainBurstCount>
+          <q1:TrainDelayuSec>0</q1:TrainDelayuSec>
+          <q1:PowerOn>true</q1:PowerOn>
+          <q1:Enable>true</q1:Enable>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Timer">
+          <DueTime>PT0S</DueTime>
+          <Period>PT1S</Period>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>true</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:MatrixWriter">
+          <q3:Path>time_rhd2_.raw</q3:Path>
+          <q3:Suffix>Timestamp</q3:Suffix>
+          <q3:Overwrite>false</q3:Overwrite>
+          <q3:Layout>ColumnMajor</q3:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:MatrixWriter">
+          <q3:Path>time_rhd1_.raw</q3:Path>
+          <q3:Suffix>Timestamp</q3:Suffix>
+          <q3:Overwrite>false</q3:Overwrite>
+          <q3:Layout>ColumnMajor</q3:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.Timestamp</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.Timestamp</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:MatrixWriter">
+          <q3:Path>ephys_rhd1_.raw</q3:Path>
+          <q3:Suffix>Timestamp</q3:Suffix>
+          <q3:Overwrite>false</q3:Overwrite>
+          <q3:Layout>ColumnMajor</q3:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:MatrixWriter">
+          <q3:Path>ephys_rhd2_.raw</q3:Path>
+          <q3:Suffix>Timestamp</q3:Suffix>
+          <q3:Overwrite>false</q3:Overwrite>
+          <q3:Layout>ColumnMajor</q3:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:MatrixWriter">
+          <q3:Path>aux_rhd1_.raw</q3:Path>
+          <q3:Suffix>Timestamp</q3:Suffix>
+          <q3:Overwrite>false</q3:Overwrite>
+          <q3:Layout>ColumnMajor</q3:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:MatrixWriter">
+          <q3:Path>aux_rhd2_.raw</q3:Path>
+          <q3:Suffix>Timestamp</q3:Suffix>
+          <q3:Overwrite>false</q3:Overwrite>
+          <q3:Layout>ColumnMajor</q3:Layout>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge>
+        <From>0</From>
+        <To>4</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>0</From>
+        <To>2</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>0</From>
+        <To>20</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>1</From>
+        <To>21</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>2</From>
+        <To>9</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>3</From>
+        <To>5</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>3</From>
+        <To>7</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>3</From>
+        <To>19</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>4</From>
+        <To>6</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>5</From>
+        <To>1</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>6</From>
+        <To>23</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>7</From>
+        <To>8</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>8</From>
+        <To>24</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>9</From>
+        <To>22</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>10</From>
+        <To>12</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>11</From>
+        <To>13</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>15</From>
+        <To>16</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>16</From>
+        <To>14</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>19</From>
+        <To>17</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>20</From>
+        <To>18</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>21</From>
+        <To>10</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>22</From>
+        <To>11</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>23</From>
+        <To>10</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>24</From>
+        <To>11</To>
+        <Label>Source2</Label>
+      </Edge>
+    </Edges>
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.OEPCIe.RHDDevice, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Ephys.AdcScale, Bonsai.Ephys, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.Concat, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.OEPCIe.ElectricalStimulator, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Timer, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.MatrixWriter, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>
