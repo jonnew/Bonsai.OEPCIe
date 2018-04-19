@@ -21,7 +21,8 @@ namespace Bonsai.OEPCIe
             return source.Do(
                 input =>
                 {
-                    oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.TRIGGER, 0x01);
+                    if (input)
+                        oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.TRIGGER, 0x01);
                 });
         }
 

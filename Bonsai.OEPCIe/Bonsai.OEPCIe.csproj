@@ -118,6 +118,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Bonsai.OEPCIe.nuspec" />
+    <None Include="Bonsai.OEPCIe.props">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -132,10 +135,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.props'))" />
     <Error Condition="!Exists('..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.targets'))" />
-    <Error Condition="!Exists('..\packages\clroepcie.1.0.0\build\net45\clroepcie.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\clroepcie.1.0.0\build\net45\clroepcie.targets'))" />
   </Target>
   <Import Project="..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.targets" Condition="Exists('..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.targets')" />
-  <Import Project="..\packages\clroepcie.1.0.0\build\net45\clroepcie.targets" Condition="Exists('..\packages\clroepcie.1.0.0\build\net45\clroepcie.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

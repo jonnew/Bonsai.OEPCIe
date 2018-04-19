@@ -34,6 +34,7 @@ namespace Bonsai.OEPCIe
         {
             if (!running)
             {
+                DAQ.Reset();
                 DAQ.Start();
                 running = true;
                 CollectFrames = Task.Factory.StartNew(() => 
