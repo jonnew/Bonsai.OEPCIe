@@ -1,40 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using OpenCV.Net;
 using System.Reactive.Linq;
-using System.Reactive.Disposables;
 using System.ComponentModel;
-using System.Drawing.Design;
 
 namespace Bonsai.OEPCIe
 {
     using oe;
+    using System.Drawing.Design;
 
+    [Description("Acquires data from RHDxxxx bioamplifier chips.")]
     public class RHDDevice : Source<RHDDataFrame>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
         private Dictionary<int, oe.lib.oepcie.device_t> devices;
         IObservable<RHDDataFrame> source;
-        private int device_index = 1;
+        private int hardware_clock_hz;
 
         public RHDDevice() {
 
             // Reference to context
             this.oepcie = OEPCIeManager.ReserveDAQ();
 
+            // Find the hardware clock rate
+            hardware_clock_hz = oepcie.DAQ.GetOption(Context.Option.SYSCLKHZ);
+
             // Find all RHD devices
             devices = oepcie.DAQ.DeviceMap.Where(
                     pair => pair.Value.id == (uint)Device.DeviceID.RHD2132 || pair.Value.id == (uint)Device.DeviceID.RHD2164
-            ).ToDictionary(x => x.Key, x => x.Value); ;
+            ).ToDictionary(x => x.Key, x => x.Value);
+
+            //var keys = devices.Keys.ToList();
 
             // Stop here if there are no devices to use
             if (devices.Count == 0)
                 throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
 
-            device_index = devices.Keys.First();
+            DeviceSelection = new DeviceIndexSelection(devices); // .SelectedIndex = devices.Keys.First();
 
             // Set defaults here, these settings can be manipulated in the outer scope and affect the functionality of the Task, I think.
             SampleRate = AmplifierSampleRate.SampleRate30000Hz;
@@ -49,28 +52,30 @@ namespace Bonsai.OEPCIe
                 {
                     var frame_queue = oepcie.Environment.Subscribe();
 
-                    try { 
+                    try
+                    {
                         oepcie.Environment.Start();
 
-                        var data_block = new RHDDataBlock(NumEphysChannels((int)devices[device_index].id));
+                        var data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceSelection.SelectedIndex].id), BlockSize);
 
                         while (!cancellationToken.IsCancellationRequested)
                         {
                             // Blocks until frame available
-                            var frame = frame_queue.Take();
+                            var frame = frame_queue.Take(cancellationToken);
 
                             // If this frame contaisn data from the selected device_index
-                            if (frame.DeviceIndices.Contains(DeviceIndex))
+                            if (frame.DeviceIndices.Contains(DeviceSelection.SelectedIndex))
                             {
                                 // Pull the sample
-                                if (data_block.FillFromFrame(frame, DeviceIndex))
-                                { 
-                                    observer.OnNext(new RHDDataFrame(data_block)); //TODO: Does this deep copy??
-                                    data_block.Reset();  
-                                }                               
+                                if (data_block.FillFromFrame(frame, DeviceSelection.SelectedIndex))
+                                {
+                                    observer.OnNext(new RHDDataFrame(data_block, hardware_clock_hz)); //TODO: Does this deep copy??
+                                    data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceSelection.SelectedIndex].id), BlockSize);
+                                }
                             }
                         }
                     }
+                    catch (OperationCanceledException) { } // Thrown by frame_queue.Take(cancellationToken);
                     finally
                     {
                         oepcie.Environment.Stop();
@@ -86,7 +91,6 @@ namespace Bonsai.OEPCIe
             .RefCount();
         }
 
-
         public override IObservable<RHDDataFrame> Generate()
         {
             return source;
@@ -98,9 +102,19 @@ namespace Bonsai.OEPCIe
             SAMPLERATE = 1,
         }
 
+        // TODO: Implement these to affect configuration registers. They dont do anything right now.
+
         // TODO: Constrain based on device map
-        //[Range(0, )]
-        public int DeviceIndex { get; set; }
+        [Editor("Bonsai.OEPCIe.Design.IndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
+        [Description("The RHD Device handled by this node.")]
+        //[DeviceIndexAttribute(devices.Keys.ToArray())]
+        public DeviceIndexSelection DeviceSelection { get; set; }
+        //public int DeviceIndex { get; set; }
+
+        //[Category(BoardCategory)]
+        [Range(10, 10000)]
+        [Description("The size of data blocks, in samples, that are propogated in the observable sequence.")]
+        public int BlockSize { get; set; } = 250;
 
         //[Category(BoardCategory)]
         [Description("The per-channel sampling rate.")]
@@ -126,7 +140,7 @@ namespace Bonsai.OEPCIe
         [Description("Specifies whether the DSP offset removal filter is enabled.")]
         public bool DspEnabled { get; set; }
 
-        private int NumEphysChannels(int id)
+        static private int NumEphysChannels(int id)
         {
             switch (id)
             {
@@ -139,7 +153,7 @@ namespace Bonsai.OEPCIe
             }
         }
 
-        private int NumAuxInChannels(int id)
+        static private int NumAuxInChannels(int id)
         {
             switch (id)
             {
@@ -150,7 +164,6 @@ namespace Bonsai.OEPCIe
                     throw new oe.OEException((int)oe.lib.oepcie.Error.DEVID);
             }
         }
-
 
         // Specifies the available per-channel sampling rates.
         public enum AmplifierSampleRate

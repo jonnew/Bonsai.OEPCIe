@@ -6,16 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
-// TODO: background task to collect frames along with start and stop methods
 namespace Bonsai.OEPCIe
 {
     public class OEPCIe
     {
-        private bool running = false;
-        //public bool Running { get { return running; } private set { } }  // Atomic by nature in C#
         public oe.Context DAQ { get; private set; }
         private Task CollectFrames;
-        // TODO: confirm that oe.Frame is a reference type, so it will not be copied for each queue
+        private CancellationTokenSource TokenSource;
+        private CancellationToken CollectFramesToken;
         private List<BlockingCollection<oe.Frame>> frame_queues = new List<BlockingCollection<oe.Frame>>();
 
         public OEPCIe()
@@ -32,31 +30,37 @@ namespace Bonsai.OEPCIe
 
         public void Start()
         {
-            if (!running)
+            if (CollectFrames == null || CollectFrames.Status == TaskStatus.RanToCompletion)
             {
                 DAQ.Reset();
                 DAQ.Start();
-                running = true;
-                CollectFrames = Task.Factory.StartNew(() => 
+                TokenSource = new CancellationTokenSource();
+                CollectFramesToken = TokenSource.Token;
+
+                //running = true;
+                CollectFrames = Task.Factory.StartNew(() =>
                 {
-                    while (running)
+                    while (!CollectFramesToken.IsCancellationRequested)
                     {
                         var frame = DAQ.ReadFrame();
 
-                        foreach (var q in frame_queues) {
+                        foreach (var q in frame_queues)
+                        {
                             q.Add(frame);
                         }
                     }
                 },
-                TaskCreationOptions.LongRunning);
+                CollectFramesToken,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
             }
         }
 
         public void Stop()
         {
-            if (running)
+            if (CollectFrames != null && !CollectFrames.IsCanceled)
             {
-                running = false; // Knock all threads out of their collection loop
+                TokenSource.Cancel();
                 Task.WaitAll(CollectFrames); // Wait for theads to exit
                 DAQ.Stop(); // Stop the hardware
             }

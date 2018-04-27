@@ -1,0 +1,103 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Reactive.Linq;
+using System.ComponentModel;
+
+namespace Bonsai.OEPCIe
+{
+    using oe;
+    
+    public class LightHouseDevice : Source<LightHouseDataFrame>
+    {
+        private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
+        private Dictionary<int, oe.lib.oepcie.device_t> devices;
+        IObservable<LightHouseDataFrame> source;
+        private int hardware_clock_hz;
+
+        public LightHouseDevice() {
+
+            // Reference to context
+            this.oepcie = OEPCIeManager.ReserveDAQ();
+
+            // Find the hardware clock rate
+            hardware_clock_hz = oepcie.DAQ.GetOption(Context.Option.SYSCLKHZ);
+
+            // Find all RHD devices
+            devices = oepcie.DAQ.DeviceMap.Where(
+                    pair => pair.Value.id == (uint)Device.DeviceID.TS4231
+            ).ToDictionary(x => x.Key, x => x.Value);
+
+            // Stop here if there are no devices to use
+            if (devices.Count == 0)
+                throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
+
+            DeviceIndex = devices.Keys.First();
+
+            source = Observable.Create<LightHouseDataFrame>((observer, cancellationToken) =>
+            {
+                return Task.Factory.StartNew(() =>
+                {
+                    var frame_queue = oepcie.Environment.Subscribe();
+
+                    try
+                    {
+                        oepcie.Environment.Start();
+
+                        var data_block = new LightHouseDataBlock(BlockSize);
+
+                        while (!cancellationToken.IsCancellationRequested)
+                        {
+                            // Blocks until frame available
+                            var frame = frame_queue.Take(cancellationToken);
+
+                            // If this frame contaisn data from the selected device_index
+                            if (frame.DeviceIndices.Contains(DeviceIndex)) // DeviceSelection.SelectedIndex))
+                            {
+   
+                                // Pull the sample
+                                if (data_block.FillFromFrame(frame, DeviceIndex)) // DeviceSelection.SelectedIndex))
+                                {
+                                    observer.OnNext(new LightHouseDataFrame(data_block, hardware_clock_hz));
+                                    data_block = new LightHouseDataBlock(BlockSize);
+                                }
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException) { } // Thrown by frame_queue.Take(cancellationToken);
+                    finally
+                    {
+                        oepcie.Environment.Stop();
+                        oepcie.Environment.Unsubscribe(frame_queue);
+                        //oepcie.Dispose(); // TODO: this should only really dispose if reference count is 0
+                    }
+                },
+                cancellationToken,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
+            })
+            .PublishReconnectable()
+            .RefCount();
+        }
+
+        public override IObservable<LightHouseDataFrame> Generate()
+        {
+            return source;
+        }
+
+        // TODO: Constrain based on device map
+        // TODO: Implement these to affect configuration registers. They dont do anything right now.
+        //[Editor("Bonsai.OEPCIe.Design.DeviceCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
+        [Description("The RHD Device handled by this node.")]
+        //[DeviceIndexAttribute(devices.Keys.ToArray())]
+        //public DeviceIndexSelection DeviceSelection { get; set; }
+        public int DeviceIndex { get; set; }
+
+        [Range(1, 100)]
+        [Description("The size of data blocks, in samples, that are propogated in the observable sequence.")]
+        public int BlockSize { get; set; } = 5;
+
+    }
+}

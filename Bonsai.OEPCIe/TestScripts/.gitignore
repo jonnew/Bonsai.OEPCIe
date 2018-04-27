@@ -1,0 +1,3 @@
+# Ignore test script data files
+*.raw
+*.csv

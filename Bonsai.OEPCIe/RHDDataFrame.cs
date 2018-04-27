@@ -11,17 +11,23 @@ namespace Bonsai.OEPCIe
     /// </summary>
     public class RHDDataFrame
     {
-        public RHDDataFrame(RHDDataBlock dataBlock)
+        public RHDDataFrame(RHDDataBlock dataBlock, int hardware_clock_hz)
         {
-            Timestamp = GetTimestampData(dataBlock.Timestamp);
+            LocalClock = GetTimestampData(dataBlock.LocalClock, hardware_clock_hz);
+            RemoteClock = GetTimestampData(dataBlock.RemoteClock, 100000000); // TODO: remote clock rate?
             EphysData = GetEphysData(dataBlock.EphysData);
             AuxiliaryData = GetAuxiliaryData(dataBlock.AuxiliaryData);
-            //TtlOut = GetTtlData(dataBlock.TtlOut);
         }
 
-        Mat GetTimestampData(uint[] data)
+        Mat GetTimestampData(ulong[] data, int hardware_clock_hz)
         {
-            return Mat.FromArray(data, 1, data.Length, Depth.S32, 1); // TODO: No ulong option??
+            var ts = new double[data.Count()];
+            double period_sec = 1.0 / (double)hardware_clock_hz;
+
+            for(int i = 0; i < data.Count(); i++)
+                ts[i] = period_sec * (double)data[i];
+
+            return Mat.FromArray(ts, 1, data.Length, Depth.F64, 1); 
         }
 
         Mat GetEphysData(int[,] data)
@@ -54,14 +60,13 @@ namespace Bonsai.OEPCIe
             return output;
         }
 
-        public Mat Timestamp { get; private set; }
+        public Mat LocalClock { get; private set; }
+
+        public Mat RemoteClock { get; private set; }
 
         public Mat EphysData { get; private set; }
 
         public Mat AuxiliaryData { get; private set; }
 
-        //public Mat TtlOut { get; private set; }
-
-        //public double BufferCapacity { get; private set; }
     }
 }

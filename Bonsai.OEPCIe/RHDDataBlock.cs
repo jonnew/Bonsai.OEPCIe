@@ -12,26 +12,26 @@ namespace Bonsai.OEPCIe
     /// </summary>
     public class RHDDataBlock
     {
-        const int SamplesPerBlock = 256;
-
+        private int SamplesPerBlock;
         public readonly int NumChannels;
         public readonly int NumAuxInChannels;
 
         private int index = 0;
-        uint[] timeStamp;
+        ulong[] local_clock;
+        ulong[] remote_clock;
         int[,] ephysData;
         int[,] auxiliaryData;
-        //int[] ttlOut;
 
-        public RHDDataBlock(int num_ephys_channels, int num_aux_in_channels = 3)
+        public RHDDataBlock(int num_ephys_channels, int samples_per_block = 250, int num_aux_in_channels = 3)
         {
             NumChannels = num_ephys_channels;
             NumAuxInChannels = num_aux_in_channels;
+            SamplesPerBlock = samples_per_block;
 
-            AllocateArray1D(ref timeStamp, SamplesPerBlock);
-            AllocateArray2D(ref ephysData, num_ephys_channels, SamplesPerBlock);
-            AllocateArray2D(ref auxiliaryData, num_aux_in_channels, SamplesPerBlock);
-            //AllocateIntArray1D(ref ttlOut, samplesPerBlock);
+            AllocateArray1D(ref local_clock, samples_per_block);
+            AllocateArray1D(ref remote_clock, samples_per_block);
+            AllocateArray2D(ref ephysData, num_ephys_channels, samples_per_block);
+            AllocateArray2D(ref auxiliaryData, num_aux_in_channels, samples_per_block);
         }
 
         public bool FillFromFrame(oe.Frame frame, int device_index)
@@ -39,11 +39,17 @@ namespace Bonsai.OEPCIe
             if (index >= SamplesPerBlock)
                 throw new IndexOutOfRangeException();
 
-            timeStamp[index] = (uint)frame.Time();
-            var data = frame.Data<UInt16>((int)device_index);
+            local_clock[index] = frame.Time();
 
+            // [uint64_t local_clock, uint16_t ephys1, uint16_t ephys2, ... , uint16_t aux1, uint16_t aux2, ...]
+            var data = frame.Data<ushort>(device_index);
+
+            // TODO
+            //remote_clock[index] = ((ulong)data[0] << 48) | ((ulong)data[1] << 32) | ((ulong)data[2] << 16) | ((ulong)data[3] << 0);
+
+            // TODO int chan = 4;
             int chan = 0;
-            for (chan = 0; chan < NumChannels; chan++)
+            for (; chan < NumChannels + 4; chan++)
             {
                 ephysData[chan, index] = data[chan];
             }
@@ -55,13 +61,8 @@ namespace Bonsai.OEPCIe
             return ++index == SamplesPerBlock;
         }
 
-        public void Reset()
-        {
-            index = 0;
-        }
-
         // Allocates memory for a 1-D array of integers.
-        void AllocateArray1D(ref uint[] array1D, int xSize)
+        void AllocateArray1D(ref ulong[] array1D, int xSize)
         {
             Array.Resize(ref array1D, xSize);
         }
@@ -73,11 +74,19 @@ namespace Bonsai.OEPCIe
         }
 
         /// <summary>
-        /// Gets the array of 64-bit unsigned sample timestamps.
+        /// Gets the array of 64-bit unsigned local hardware clock.
         /// </summary>
-        public uint[] Timestamp
+        public ulong[] LocalClock
         {
-            get { return timeStamp; }
+            get { return local_clock; }
+        }
+
+        /// <summary>
+        /// Gets the array of 64-bit unsigned remote hardware clock.
+        /// </summary>
+        public ulong[] RemoteClock
+        {
+            get { return remote_clock; }
         }
 
         /// <summary>
@@ -95,26 +104,5 @@ namespace Bonsai.OEPCIe
         {
             get { return auxiliaryData; }
         }
-
-        // Haha no void casting!
-        //int ConvertWord(byte[] buffer, int index)
-        //{
-        //    uint x1, x2, result;
-
-        //    x1 = (uint)buffer[index];
-        //    x2 = (uint)buffer[index + 1];
-
-        //    result = (x2 << 8) | (x1 << 0);
-
-        //    return (int)result;
-        //}
-
-        ///// <summary>
-        ///// Gets an array indicating the state of the 16 digital TTL output lines on the FPGA.
-        ///// </summary>
-        //public int[] TtlOut
-        //{
-        //    get { return ttlOut; }
-        //}
     }
 }
