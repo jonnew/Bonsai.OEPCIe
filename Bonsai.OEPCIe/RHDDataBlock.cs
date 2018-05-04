@@ -49,7 +49,7 @@ namespace Bonsai.OEPCIe
 
             // TODO int chan = 4;
             int chan = 0;
-            for (; chan < NumChannels + 4; chan++)
+            for (; chan < NumChannels; chan++)
             {
                 ephysData[chan, index] = data[chan];
             }

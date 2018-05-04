@@ -23,11 +23,12 @@ namespace Bonsai.OEPCIe.Design
             
             if (editorService != null)
             {
-                var control = new DeviceIndexSelectionControl();
+                var control = new DeviceIndexSelectionControl((DeviceIndexSelection)value);
                 control.SelectedValue = value;
                 control.SelectedValueChanged += delegate { editorService.CloseDropDown(); };
                 editorService.DropDownControl(control);
-                return control.SelectedValue;
+                ((DeviceIndexSelection)value).StringToSelection((string)control.SelectedValue);
+                return value;
             }
 
             return base.EditValue(context, provider, value);

@@ -1,4 +1,4 @@
-﻿namespace Bonsai.OEPCIe.Design
+﻿namespace Bonsai.Design
 {
     partial class DeviceIndexSelectionControl
     {
@@ -28,10 +28,32 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            this.deviceIndexListBox = new System.Windows.Forms.ListBox();
+            this.SuspendLayout();
+            // 
+            // deviceIndexListBox
+            // 
+            this.deviceIndexListBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.deviceIndexListBox.FormattingEnabled = true;
+            this.deviceIndexListBox.Location = new System.Drawing.Point(0, 0);
+            this.deviceIndexListBox.Name = "deviceIndexListBox";
+            this.deviceIndexListBox.Size = new System.Drawing.Size(128, 57);
+            this.deviceIndexListBox.TabIndex = 0;
+            this.deviceIndexListBox.SelectedIndexChanged += new System.EventHandler(this.deviceIndexListBox_SelectedValueChanged);
+            // 
+            // DeviceIndexSelectionControl
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.deviceIndexListBox);
+            this.Name = "DeviceIndexSelectionControl";
+            this.Size = new System.Drawing.Size(128, 57);
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+
+        private System.Windows.Forms.ListBox deviceIndexListBox;
     }
 }

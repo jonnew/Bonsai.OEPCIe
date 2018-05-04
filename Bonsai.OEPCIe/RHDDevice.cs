@@ -31,13 +31,11 @@ namespace Bonsai.OEPCIe
                     pair => pair.Value.id == (uint)Device.DeviceID.RHD2132 || pair.Value.id == (uint)Device.DeviceID.RHD2164
             ).ToDictionary(x => x.Key, x => x.Value);
 
-            //var keys = devices.Keys.ToList();
-
             // Stop here if there are no devices to use
             if (devices.Count == 0)
                 throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
 
-            DeviceSelection = new DeviceIndexSelection(devices); // .SelectedIndex = devices.Keys.First();
+            DeviceSelection = new DeviceIndexSelection(devices);
 
             // Set defaults here, these settings can be manipulated in the outer scope and affect the functionality of the Task, I think.
             SampleRate = AmplifierSampleRate.SampleRate30000Hz;
@@ -80,7 +78,7 @@ namespace Bonsai.OEPCIe
                     {
                         oepcie.Environment.Stop();
                         oepcie.Environment.Unsubscribe(frame_queue);
-                        //oepcie.Dispose(); // TODO: this should only really dispose if reference count is 0
+                        oepcie.Dispose(); // TODO: this should only really dispose if reference count is 0
                     }
                 },
                 cancellationToken,
@@ -102,14 +100,11 @@ namespace Bonsai.OEPCIe
             SAMPLERATE = 1,
         }
 
-        // TODO: Implement these to affect configuration registers. They dont do anything right now.
-
-        // TODO: Constrain based on device map
-        [Editor("Bonsai.OEPCIe.Design.IndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
-        [Description("The RHD Device handled by this node.")]
-        //[DeviceIndexAttribute(devices.Keys.ToArray())]
+        [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
+        [Description("The RHD device handled by this node.")]
         public DeviceIndexSelection DeviceSelection { get; set; }
-        //public int DeviceIndex { get; set; }
+
+        // TODO: Implement these to affect configuration registers. They dont do anything right now.
 
         //[Category(BoardCategory)]
         [Range(10, 10000)]

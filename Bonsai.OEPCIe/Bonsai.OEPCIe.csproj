@@ -125,12 +125,6 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\open-ephys-pcie\oepcie\clroepcie\clroepcie\clroepcie.csproj">
-      <Project>{1524a9f6-323d-472d-b2f0-cadaea637fd2}</Project>
-      <Name>clroepcie</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <StartAction>Program</StartAction>

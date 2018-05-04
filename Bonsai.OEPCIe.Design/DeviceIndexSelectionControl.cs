@@ -1,57 +1,65 @@
-﻿using Bonsai.Design;
-using System;
-using System.Collections.Generic;
-using System.Drawing.Design;
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
+using Bonsai.OEPCIe;
 
-namespace Bonsai.OEPCIe.Design
+namespace Bonsai.Design
 {
-    public partial class DeviceIndexSelectionControl : ConfigurationDropDown
+    public partial class DeviceIndexSelectionControl : UserControl
     {
-        protected override IEnumerable<string> GetConfigurationNames()
+        const float DefaultDpi = 96f;
+        DeviceIndexSelectionEditorService editorService;
+
+        public DeviceIndexSelectionControl(DeviceIndexSelection selection)
+            : this(null, selection)
         {
-            //return SerialPort.GetPortNames();
-            return new string[2];
         }
 
-        protected override object LoadConfiguration()
+        public DeviceIndexSelectionControl(IServiceProvider provider, DeviceIndexSelection selection)
         {
-            //return ArduinoManager.LoadConfiguration();
-            return null;
-        }
+            InitializeComponent();
+            editorService = new DeviceIndexSelectionEditorService(this, provider);
 
-        protected override void SaveConfiguration(object configuration)
-        {
-            //var arduinoConfiguration = configuration as ArduinoConfigurationCollection;
-            //if (arduinoConfiguration == null)
-            //{
-            //    throw new ArgumentNullException("configuration");
-            //}
-
-            //ArduinoManager.SaveConfiguration(arduinoConfiguration);
-        }
-
-        protected override UITypeEditor CreateConfigurationEditor(Type type)
-        {
-            return new DeviceIndexSelectionCollectionEditor(type);
-        }
-
-        class DeviceIndexSelectionCollectionEditor : DescriptiveCollectionEditor
-        {
-            public DeviceIndexSelectionCollectionEditor(Type type)
-                : base(type)
+            using (var graphics = Graphics.FromHwnd(IntPtr.Zero))
             {
-            }
+                SuspendLayout();
 
-            protected override string GetDisplayText(object value)
-            {
-                var configuration = value as DeviceIndexSelection;
-                if (configuration != null)
+
+                foreach (var idx in selection.Indices)
                 {
-                    return configuration.SelectedIndex.ToString();
+                    if (!string.IsNullOrWhiteSpace(idx.ToString()))
+                    {
+                        deviceIndexListBox.Items.Add(idx.ToString());
+                    }
                 }
 
-                return base.GetDisplayText(value);
+                var drawScale = graphics.DpiY / DefaultDpi;
+                deviceIndexListBox.Height = (int)Math.Ceiling(deviceIndexListBox.ItemHeight * deviceIndexListBox.Items.Count * drawScale);
+                ResumeLayout();
             }
+        }
+
+        public object SelectedValue
+        {
+            get { return deviceIndexListBox.SelectedItem; }
+            set { deviceIndexListBox.SelectedItem = value; }
+        }
+
+        public event EventHandler SelectedValueChanged;
+
+        private void OnSelectedValueChanged(EventArgs e)
+        {
+            SelectedValueChanged?.Invoke(this, e);
+        }
+
+        private void deviceIndexListBox_SelectedValueChanged(object sender, EventArgs e)
+        {
+            OnSelectedValueChanged(e);
+        }
+
+        private void deviceIndexListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            OnSelectedValueChanged(e);
         }
     }
 }

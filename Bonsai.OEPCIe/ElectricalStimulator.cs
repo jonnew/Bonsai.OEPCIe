@@ -15,6 +15,7 @@ namespace Bonsai.OEPCIe
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
         private Dictionary<int, oe.lib.oepcie.device_t> devices;
+        const uint device_index = 0; // TODO: remove once we are using the Device selection
 
         public override IObservable<bool> Process(IObservable<bool> source)
         {
@@ -33,12 +34,15 @@ namespace Bonsai.OEPCIe
             this.oepcie = OEPCIeManager.ReserveDAQ(); // TODO: Somehow get the context index from the configuration file
 
             // Find all estim devices
-            devices = oepcie.DAQ.DeviceMap.Where(pair => pair.Value.id == (uint)Device.DeviceID.ESTIM).ToDictionary(x => x.Key, x => x.Value);
+            // TODO: for some reason, estim is on MPU right now...
+            devices = oepcie.DAQ.DeviceMap.Where(pair => pair.Value.id == (uint)Device.DeviceID.MPU9250).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no estim devices to use
-            // TODO: estim does not currently appear in device map
-            //if (devices.Count == 0)
-            //    throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
+            if (devices.Count == 0)
+                throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
+
+            // Set device selection
+            DeviceSelection = new DeviceIndexSelection(devices);
 
             // Default configuration
             Reset();
@@ -64,6 +68,7 @@ namespace Bonsai.OEPCIe
 
         void ResetStimulatorStateMachine()
         {
+            // TODO: device index ignore currently
             oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.RESET, 0x01);
         }
 
@@ -79,24 +84,9 @@ namespace Bonsai.OEPCIe
             return duration_10usecs / 10;
         }
 
-        // TODO: use estim_devices to constrain the value to drop-down menu
-        private uint device_index = 1;
-
-        [Description("The index of this stimulator within the device map.")]
-        public uint DeviceIndex
-        {
-            get { return device_index; }
-            set
-            {
-                // TODO: estim does not currently appear in device map
-                //if (oepcie != null &&
-                //    oepcie.Environment.DAQ.DeviceID(value) != (uint)Device.DeviceID.ESTIM)
-                //{
-                //    throw new OEException((int)oe.lib.oepcie.Error.DEVID);
-                //}
-                device_index = value;
-            }
-        }
+        [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
+        [Description("The electrical stimulator device handled by this node.")]
+        public DeviceIndexSelection DeviceSelection { get; set; }
 
         private double pulse_phase_one_current_uA;
         [Description("Phase 1 pulse current (-1500 to +1500 uA).")]
