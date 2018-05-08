@@ -10,6 +10,7 @@ namespace Bonsai.OEPCIe
     using oe;
     using System.Drawing.Design;
 
+    [Description("Aquires data from a single TS4231 light to digital converter chip.")]
     public class LightHouseDevice : Source<LightHouseDataFrame>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
@@ -34,7 +35,8 @@ namespace Bonsai.OEPCIe
             if (devices.Count == 0)
                 throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
 
-            DeviceSelection = new DeviceIndexSelection(devices);
+            DeviceIndex = new DeviceIndexSelection();
+            DeviceIndex.Indices = devices.Keys.ToArray();
 
             source = Observable.Create<LightHouseDataFrame>((observer, cancellationToken) =>
             {
@@ -54,11 +56,11 @@ namespace Bonsai.OEPCIe
                             var frame = frame_queue.Take(cancellationToken);
 
                             // If this frame contaisn data from the selected device_index
-                            if (frame.DeviceIndices.Contains(DeviceSelection.SelectedIndex))
+                            if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
                             {
    
                                 // Pull the sample
-                                if (data_block.FillFromFrame(frame, DeviceSelection.SelectedIndex))
+                                if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                                 {
                                     observer.OnNext(new LightHouseDataFrame(data_block, hardware_clock_hz, RemoteClockHz));
                                     data_block = new LightHouseDataBlock(BlockSize);
@@ -89,7 +91,7 @@ namespace Bonsai.OEPCIe
 
         [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
         [Description("The TS4231 optical to digital converter handled by this node.")]
-        public DeviceIndexSelection DeviceSelection { get; set; }
+        public DeviceIndexSelection DeviceIndex { get; set; }
 
         [Range(1, 100)]
         [Description("The size of data blocks, in samples, that are propogated in the observable sequence.")]

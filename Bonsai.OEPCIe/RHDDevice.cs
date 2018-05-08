@@ -10,7 +10,7 @@ namespace Bonsai.OEPCIe
     using oe;
     using System.Drawing.Design;
 
-    [Description("Acquires data from RHDxxxx bioamplifier chips.")]
+    [Description("Acquires data from a single RHDxxxx bioamplifier chip.")]
     public class RHDDevice : Source<RHDDataFrame>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
@@ -35,7 +35,8 @@ namespace Bonsai.OEPCIe
             if (devices.Count == 0)
                 throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
 
-            DeviceSelection = new DeviceIndexSelection(devices);
+            DeviceIndex = new DeviceIndexSelection();
+            DeviceIndex.Indices = devices.Keys.ToArray();
 
             // Set defaults here, these settings can be manipulated in the outer scope and affect the functionality of the Task, I think.
             SampleRate = AmplifierSampleRate.SampleRate30000Hz;
@@ -54,7 +55,7 @@ namespace Bonsai.OEPCIe
                     {
                         oepcie.Environment.Start();
 
-                        var data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceSelection.SelectedIndex].id), BlockSize);
+                        var data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceIndex.SelectedIndex].id), BlockSize);
 
                         while (!cancellationToken.IsCancellationRequested)
                         {
@@ -62,13 +63,13 @@ namespace Bonsai.OEPCIe
                             var frame = frame_queue.Take(cancellationToken);
 
                             // If this frame contaisn data from the selected device_index
-                            if (frame.DeviceIndices.Contains(DeviceSelection.SelectedIndex))
+                            if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
                             {
                                 // Pull the sample
-                                if (data_block.FillFromFrame(frame, DeviceSelection.SelectedIndex))
+                                if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                                 {
                                     observer.OnNext(new RHDDataFrame(data_block, hardware_clock_hz)); //TODO: Does this deep copy??
-                                    data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceSelection.SelectedIndex].id), BlockSize);
+                                    data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceIndex.SelectedIndex].id), BlockSize);
                                 }
                             }
                         }
@@ -102,7 +103,7 @@ namespace Bonsai.OEPCIe
 
         [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
         [Description("The RHD device handled by this node.")]
-        public DeviceIndexSelection DeviceSelection { get; set; }
+        public DeviceIndexSelection DeviceIndex { get; set; }
 
         // TODO: Implement these to affect configuration registers. They dont do anything right now.
 

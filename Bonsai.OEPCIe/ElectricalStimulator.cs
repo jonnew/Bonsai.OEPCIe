@@ -11,11 +11,11 @@ namespace Bonsai.OEPCIe
 {
     using oe;
 
+    [Description("Controls a single headborne microstimulator circuit.")]
     public class ElectricalStimulator : Sink<bool>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
         private Dictionary<int, oe.lib.oepcie.device_t> devices;
-        const uint device_index = 0; // TODO: remove once we are using the Device selection
 
         public override IObservable<bool> Process(IObservable<bool> source)
         {
@@ -23,26 +23,26 @@ namespace Bonsai.OEPCIe
                 input =>
                 {
                     if (input)
-                        oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.TRIGGER, 0x01);
+                        oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.TRIGGER, 0x01);
                 });
         }
 
         // Setup context etc
-        public ElectricalStimulator() //oe.Context context, uint device_index)
+        public ElectricalStimulator() //oe.Context context, uint (uint)DeviceIndex.SelectedIndex)
         {
             // Reference to context
             this.oepcie = OEPCIeManager.ReserveDAQ(); // TODO: Somehow get the context index from the configuration file
 
             // Find all estim devices
-            // TODO: for some reason, estim is on MPU right now...
-            devices = oepcie.DAQ.DeviceMap.Where(pair => pair.Value.id == (uint)Device.DeviceID.MPU9250).ToDictionary(x => x.Key, x => x.Value);
+            devices = oepcie.DAQ.DeviceMap.Where(pair => pair.Value.id == (uint)Device.DeviceID.ESTIM).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no estim devices to use
             if (devices.Count == 0)
                 throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
 
             // Set device selection
-            DeviceSelection = new DeviceIndexSelection(devices);
+            DeviceIndex = new DeviceIndexSelection();
+            DeviceIndex.Indices = devices.Keys.ToArray();
 
             // Default configuration
             Reset();
@@ -69,7 +69,7 @@ namespace Bonsai.OEPCIe
         void ResetStimulatorStateMachine()
         {
             // TODO: device index ignore currently
-            oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.RESET, 0x01);
+            oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.RESET, 0x01);
         }
 
         private uint currentK(double currentuA)
@@ -86,7 +86,7 @@ namespace Bonsai.OEPCIe
 
         [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
         [Description("The electrical stimulator device handled by this node.")]
-        public DeviceIndexSelection DeviceSelection { get; set; }
+        public DeviceIndexSelection DeviceIndex { get; set; }
 
         private double pulse_phase_one_current_uA;
         [Description("Phase 1 pulse current (-1500 to +1500 uA).")]
@@ -94,7 +94,7 @@ namespace Bonsai.OEPCIe
         public double Phase1CurrentuA
         {
             get { return pulse_phase_one_current_uA; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.CURRENT1, currentK(value)); pulse_phase_one_current_uA = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.CURRENT1, currentK(value)); pulse_phase_one_current_uA = value; }
         }
 
         private double pulse_phase_two_current_uA;
@@ -103,7 +103,7 @@ namespace Bonsai.OEPCIe
         public double Phase2CurrentuA
         {
             get { return pulse_phase_two_current_uA; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.CURRENT2, currentK(value)); pulse_phase_two_current_uA = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.CURRENT2, currentK(value)); pulse_phase_two_current_uA = value; }
         }
 
         private double resting_current_uA;
@@ -111,7 +111,7 @@ namespace Bonsai.OEPCIe
         public double RestingCurrentuA
         {
             get { return resting_current_uA; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.RESTCURR, currentK(value)); resting_current_uA = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.RESTCURR, currentK(value)); resting_current_uA = value; }
         }
 
         private uint pulse_phase_one_duration_usec;
@@ -120,7 +120,7 @@ namespace Bonsai.OEPCIe
         public uint PulsePhase1DurationuSec
         {
             get { return pulse_phase_one_duration_usec; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.PULSEDUR1, duration(value)); pulse_phase_one_duration_usec = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.PULSEDUR1, duration(value)); pulse_phase_one_duration_usec = value; }
         }
 
         private uint ipi;
@@ -129,7 +129,7 @@ namespace Bonsai.OEPCIe
         public uint InterPulseIntervaluSec
         {
             get { return ipi; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.IPI, duration(value)); ipi = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.IPI, duration(value)); ipi = value; }
         }
 
         private uint pulse_phase_two_duration_usec;
@@ -138,7 +138,7 @@ namespace Bonsai.OEPCIe
         public uint PulsePhase2DurationuSec
         {
             get { return pulse_phase_two_duration_usec; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.PULSEDUR2, duration(value)); pulse_phase_two_duration_usec = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.PULSEDUR2, duration(value)); pulse_phase_two_duration_usec = value; }
         }
 
         private uint pulse_period_usec;
@@ -147,7 +147,7 @@ namespace Bonsai.OEPCIe
         public uint PulsePerioduSec
         {
             get { return pulse_period_usec; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.PULSEPERIOD, duration(value)); pulse_period_usec = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.PULSEPERIOD, duration(value)); pulse_period_usec = value; }
         }
 
         private uint burst_pulse_count;
@@ -156,7 +156,7 @@ namespace Bonsai.OEPCIe
         public uint BurstPulseCount
         {
             get { return burst_pulse_count; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.BURSTCOUNT, value); burst_pulse_count = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.BURSTCOUNT, value); burst_pulse_count = value; }
         }
 
         private uint inter_burst_interval_usec;
@@ -165,7 +165,7 @@ namespace Bonsai.OEPCIe
         public uint InterBurstIntervaluSec
         {
             get { return inter_burst_interval_usec; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.IBI, duration(value)); inter_burst_interval_usec = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.IBI, duration(value)); inter_burst_interval_usec = value; }
         }
 
         private uint train_burst_count;
@@ -174,7 +174,7 @@ namespace Bonsai.OEPCIe
         public uint TrainBurstCount
         {
             get { return train_burst_count; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.TRAINCOUNT, value); train_burst_count = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.TRAINCOUNT, value); train_burst_count = value; }
         }
 
         private uint traindelay;
@@ -183,7 +183,7 @@ namespace Bonsai.OEPCIe
         public uint TrainDelayuSec
         {
             get { return traindelay; }
-            set { oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.TRAINDELAY, duration(value)); traindelay = value; }
+            set { oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.TRAINDELAY, duration(value)); traindelay = value; }
         }
 
         private bool poweron = false;
@@ -194,7 +194,7 @@ namespace Bonsai.OEPCIe
             set
             {
                 uint code = value ? (uint)0x01 : (uint)0x00;
-                oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.POWERON, code); poweron = value;
+                oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.POWERON, code); poweron = value;
             }
         }
 
@@ -206,7 +206,7 @@ namespace Bonsai.OEPCIe
             set
             {
                 uint code = value ? (uint)0x01 : (uint)0x00;
-                oepcie.DAQ.WriteRegister(device_index, (int)Device.EstimRegister.ENABLE, code); enable = value;
+                oepcie.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Device.EstimRegister.ENABLE, code); enable = value;
             }
         }
     }

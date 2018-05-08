@@ -24,7 +24,6 @@ namespace Bonsai.Design
             {
                 SuspendLayout();
 
-
                 foreach (var idx in selection.Indices)
                 {
                     if (!string.IsNullOrWhiteSpace(idx.ToString()))

@@ -74,6 +74,10 @@
       <HintPath>..\packages\Bonsai.Design.2.3.0\lib\net45\Bonsai.Design.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="clroepcie, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\clroepcie.1.0.0\lib\net45\clroepcie.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
@@ -106,7 +110,7 @@
     <Compile Include="DeviceIndexSelectionControl.Designer.cs">
       <DependentUpon>DeviceIndexSelectionControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="DeviceIndexSelectionEditorServic.cs" />
+    <Compile Include="DeviceIndexSelectionEditorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +128,24 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if $(PlatformName) == x64 (
+    if $(ConfigurationName) == Debug (
+        xcopy "$(TargetPath)" "$(SolutionDir)Bonsai.OEPCIe\bin\x64\Debug\" /Y
+    ) else (
+        xcopy "$(TargetPath)" "$(SolutionDir)Bonsai.OEPCIe\bin\x64\Release\" /Y
+    )
+) ELSE (
+    if $(ConfigurationName) == Debug (
+        xcopy "$(TargetPath)" "$(SolutionDir)Bonsai.OEPCIe\bin\x86\Debug\" /Y
+    ) else (
+        xcopy "$(TargetPath)" "$(SolutionDir)Bonsai.OEPCIe\bin\x86\Release\" /Y
+    )
+)
+
+
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
