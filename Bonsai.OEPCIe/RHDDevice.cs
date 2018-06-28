@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Reactive.Linq;
 using System.ComponentModel;
+using System.Reactive.Disposables;
+using System.Drawing.Design;
 
 namespace Bonsai.OEPCIe
 {
     using oe;
-    using System.Drawing.Design;
 
     [Description("Acquires data from a single RHDxxxx bioamplifier chip.")]
     public class RHDDevice : Source<RHDDataFrame>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
-        private Dictionary<int, oe.lib.oepcie.device_t> devices;
+        private Dictionary<int, oe.lib.device_t> devices;
         IObservable<RHDDataFrame> source;
         private int hardware_clock_hz;
 
-        public RHDDevice() {
-
+        public RHDDevice()
+        {
             // Reference to context
             this.oepcie = OEPCIeManager.ReserveDAQ();
 
@@ -33,7 +33,7 @@ namespace Bonsai.OEPCIe
 
             // Stop here if there are no devices to use
             if (devices.Count == 0)
-                throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
+                throw new oe.OEException((int)oe.lib.Error.DEVIDX);
 
             DeviceIndex = new DeviceIndexSelection();
             DeviceIndex.Indices = devices.Keys.ToArray();
@@ -45,49 +45,35 @@ namespace Bonsai.OEPCIe
             DspCutoffFrequency = 1.0;
             DspEnabled = true;
 
-            source = Observable.Create<RHDDataFrame>((observer, cancellationToken) =>
+            source = Observable.Create<RHDDataFrame>(observer =>
             {
-                return Task.Factory.StartNew(() =>
+                EventHandler<FrameReceivedEventArgs> inputReceived;
+                var data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceIndex.SelectedIndex].id), BlockSize);
+
+                oepcie.Environment.Start();
+
+                inputReceived = (sender, e) =>
                 {
-                    var frame_queue = oepcie.Environment.Subscribe();
-
-                    try
+                    var frame = e.Value;
+                    //If this frame contaisn data from the selected device_index
+                    if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
                     {
-                        oepcie.Environment.Start();
-
-                        var data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceIndex.SelectedIndex].id), BlockSize);
-
-                        while (!cancellationToken.IsCancellationRequested)
+                        // Pull the sample
+                        if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                         {
-                            // Blocks until frame available
-                            var frame = frame_queue.Take(cancellationToken);
-
-                            // If this frame contaisn data from the selected device_index
-                            if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
-                            {
-                                // Pull the sample
-                                if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
-                                {
-                                    observer.OnNext(new RHDDataFrame(data_block, hardware_clock_hz)); //TODO: Does this deep copy??
-                                    data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceIndex.SelectedIndex].id), BlockSize);
-                                }
-                            }
+                            observer.OnNext(new RHDDataFrame(data_block, hardware_clock_hz)); //TODO: Does this deep copy??
+                            data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceIndex.SelectedIndex].id), BlockSize);
                         }
                     }
-                    catch (OperationCanceledException) { } // Thrown by frame_queue.Take(cancellationToken);
-                    finally
-                    {
-                        oepcie.Environment.Stop();
-                        oepcie.Environment.Unsubscribe(frame_queue);
-                        oepcie.Dispose(); // TODO: this should only really dispose if reference count is 0
-                    }
-                },
-                cancellationToken,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
-            })
-            .PublishReconnectable()
-            .RefCount();
+                };
+
+                oepcie.Environment.FrameInputReceived += inputReceived;
+                return Disposable.Create(() =>
+                {
+                    oepcie.Environment.FrameInputReceived -= inputReceived;
+                    oepcie.Dispose();
+                });
+            });
         }
 
         public override IObservable<RHDDataFrame> Generate()
@@ -145,7 +131,7 @@ namespace Bonsai.OEPCIe
                 case (int)Device.DeviceID.RHD2164:
                     return 64;
                 default:
-                    throw new oe.OEException((int)oe.lib.oepcie.Error.DEVID);
+                    throw new oe.OEException((int)oe.lib.Error.DEVID);
             }
         }
 
@@ -157,7 +143,7 @@ namespace Bonsai.OEPCIe
                 case (int)Device.DeviceID.RHD2164:
                     return 3;
                 default:
-                    throw new oe.OEException((int)oe.lib.oepcie.Error.DEVID);
+                    throw new oe.OEException((int)oe.lib.Error.DEVID);
             }
         }
 

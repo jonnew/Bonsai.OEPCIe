@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Text;
 using System.ComponentModel;
 using System.Drawing.Design;
 
@@ -15,7 +14,7 @@ namespace Bonsai.OEPCIe
     public class ElectricalStimulator : Sink<bool>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
-        private Dictionary<int, oe.lib.oepcie.device_t> devices;
+        private Dictionary<int, oe.lib.device_t> devices;
 
         public override IObservable<bool> Process(IObservable<bool> source)
         {
@@ -38,7 +37,7 @@ namespace Bonsai.OEPCIe
 
             // Stop here if there are no estim devices to use
             if (devices.Count == 0)
-                throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
+                throw new oe.OEException((int)oe.lib.Error.DEVIDX);
 
             // Set device selection
             DeviceIndex = new DeviceIndexSelection();

@@ -40,7 +40,7 @@ namespace Bonsai.OEPCIe
 
                     var dispose = Disposable.Create(() =>
                     {
-                        oepcie.DAQ.Dispose(false);
+                        //oepcie.DAQ.Dispose(false);
                         openContexts.Remove(context_index);
                     });
 

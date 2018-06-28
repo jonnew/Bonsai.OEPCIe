@@ -105,10 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeviceIndexSelection.cs" />
-    <Compile Include="DeviceIndexSelectionConveter.cs" />
     <Compile Include="ElectricalStimulator.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FrameInputReceivedEventArgs.cs" />
+    <Compile Include="FrameReceivedEventArgs.cs" />
     <Compile Include="LightHouseDataBlock.cs" />
     <Compile Include="LightHouseDataFrame.cs" />
     <Compile Include="LightHouseDevice.cs" />

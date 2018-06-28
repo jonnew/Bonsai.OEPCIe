@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Bonsai.OEPCIe
 {
-    public class FrameInputReceivedEventArgs : EventArgs
+    public class FrameReceivedEventArgs : EventArgs
     {
-        public FrameInputReceivedEventArgs(oe.Frame frame)
+        public FrameReceivedEventArgs(oe.Frame frame)
         {
             Value = frame;
         }

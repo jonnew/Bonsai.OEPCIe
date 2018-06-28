@@ -74,10 +74,6 @@
       <HintPath>..\packages\Bonsai.Design.2.3.0\lib\net45\Bonsai.Design.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="clroepcie, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\clroepcie.1.0.0\lib\net45\clroepcie.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
@@ -120,6 +116,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Bonsai.Design.OEPCIe.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -141,10 +138,7 @@
     ) else (
         xcopy "$(TargetPath)" "$(SolutionDir)Bonsai.OEPCIe\bin\x86\Release\" /Y
     )
-)
-
-
-</PostBuildEvent>
+)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

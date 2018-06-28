@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
+using System.Reactive.Disposables;
 using System.ComponentModel;
+using System.Drawing.Design;
 
 namespace Bonsai.OEPCIe
 {
     using oe;
-    using System.Drawing.Design;
 
     [Description("Aquires data from a single TS4231 light to digital converter chip.")]
     public class LightHouseDevice : Source<LightHouseDataFrame>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
-        private Dictionary<int, oe.lib.oepcie.device_t> devices;
+        private Dictionary<int, oe.lib.device_t> devices;
         IObservable<LightHouseDataFrame> source;
         private int hardware_clock_hz;
 
@@ -33,55 +34,42 @@ namespace Bonsai.OEPCIe
 
             // Stop here if there are no devices to use
             if (devices.Count == 0)
-                throw new oe.OEException((int)oe.lib.oepcie.Error.DEVIDX);
+                throw new oe.OEException((int)oe.lib.Error.DEVIDX);
 
             DeviceIndex = new DeviceIndexSelection();
             DeviceIndex.Indices = devices.Keys.ToArray();
 
-            source = Observable.Create<LightHouseDataFrame>((observer, cancellationToken) =>
+            source = Observable.Create<LightHouseDataFrame>(observer =>
             {
-                return Task.Factory.StartNew(() =>
+                EventHandler<FrameReceivedEventArgs> inputReceived;
+                var data_block = new LightHouseDataBlock(BlockSize);
+
+                oepcie.Environment.Start();
+
+                inputReceived = (sender, e) =>
                 {
-                    var frame_queue = oepcie.Environment.Subscribe();
+                    var frame = e.Value;
 
-                    try
+                    // If this frame contains data from the selected device_index
+                    if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
                     {
-                        oepcie.Environment.Start();
 
-                        var data_block = new LightHouseDataBlock(BlockSize);
-
-                        while (!cancellationToken.IsCancellationRequested)
+                        // Pull the sample
+                        if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                         {
-                            // Blocks until frame available
-                            var frame = frame_queue.Take(cancellationToken);
-
-                            // If this frame contaisn data from the selected device_index
-                            if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
-                            {
-   
-                                // Pull the sample
-                                if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
-                                {
-                                    observer.OnNext(new LightHouseDataFrame(data_block, hardware_clock_hz, RemoteClockHz));
-                                    data_block = new LightHouseDataBlock(BlockSize);
-                                }
-                            }
+                            observer.OnNext(new LightHouseDataFrame(data_block, hardware_clock_hz, RemoteClockHz));
+                            data_block = new LightHouseDataBlock(BlockSize);
                         }
                     }
-                    catch (OperationCanceledException) { } // Thrown by frame_queue.Take(cancellationToken);
-                    finally
-                    {
-                        oepcie.Environment.Stop();
-                        oepcie.Environment.Unsubscribe(frame_queue);
-                        oepcie.Dispose(); // TODO: this should only really dispose if reference count is 0
-                    }
-                },
-                cancellationToken,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
-            })
-            .PublishReconnectable()
-            .RefCount();
+                };
+
+                oepcie.Environment.FrameInputReceived += inputReceived;
+                return Disposable.Create(() =>
+                {
+                    oepcie.Environment.FrameInputReceived -= inputReceived;
+                    oepcie.Dispose();
+                });
+            });
         }
 
         public override IObservable<LightHouseDataFrame> Generate()

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
@@ -14,7 +12,8 @@ namespace Bonsai.OEPCIe
         private Task CollectFrames;
         private CancellationTokenSource TokenSource;
         private CancellationToken CollectFramesToken;
-        private List<BlockingCollection<oe.Frame>> frame_queues = new List<BlockingCollection<oe.Frame>>();
+
+        public event EventHandler<FrameReceivedEventArgs> FrameInputReceived;
 
         public OEPCIe()
         {
@@ -37,17 +36,11 @@ namespace Bonsai.OEPCIe
                 TokenSource = new CancellationTokenSource();
                 CollectFramesToken = TokenSource.Token;
 
-                //running = true;
                 CollectFrames = Task.Factory.StartNew(() =>
                 {
                     while (!CollectFramesToken.IsCancellationRequested)
                     {
-                        var frame = DAQ.ReadFrame();
-
-                        foreach (var q in frame_queues)
-                        {
-                            q.Add(frame);
-                        }
+                        OnFrameReceived(new FrameReceivedEventArgs(DAQ.ReadFrame()));
                     }
                 },
                 CollectFramesToken,
@@ -66,15 +59,9 @@ namespace Bonsai.OEPCIe
             }
         }
 
-        public BlockingCollection<oe.Frame> Subscribe()
+        void OnFrameReceived(FrameReceivedEventArgs e)
         {
-            frame_queues.Add(new BlockingCollection<oe.Frame>());
-            return frame_queues.Last();
-        }
-
-        public void Unsubscribe(BlockingCollection<oe.Frame> queue)
-        {
-            frame_queues.Remove(queue);
+            FrameInputReceived?.Invoke(this, e);
         }
     }
 }
