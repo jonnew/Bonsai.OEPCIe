@@ -3,21 +3,21 @@ using System.Collections.Generic;
 
 namespace Bonsai.OEPCIe
 {
-    public class LightHouseDataBlock
+    public class DigitalInput32DataBlock
     {
         private int SamplesPerBlock;
 
         private int index = 0;
         Queue<ushort> raw_samples = new Queue<ushort>();
         ulong[] clock;
-        ushort[] highLow;
+        int[] port_state;
 
-        public LightHouseDataBlock(int samples_per_block = 5)
+        public DigitalInput32DataBlock(int samples_per_block = 5)
         {
             SamplesPerBlock = samples_per_block;
 
             AllocateArray1D(ref clock, samples_per_block);
-            AllocateArray1D(ref highLow, samples_per_block);
+            AllocateArray1D(ref port_state, samples_per_block);
         }
 
         public bool FillFromFrame(oe.Frame frame, int device_index)
@@ -25,11 +25,11 @@ namespace Bonsai.OEPCIe
             if (index >= SamplesPerBlock)
                 throw new IndexOutOfRangeException();
 
-            // NB: Data contents: [uint16_t id, uint64_t remote_clock, uint16_t high_low]
+            // NB: Data contents: [uint64_t remote_clock, uint32_t port_state]
             var sample = frame.Data<ushort>(device_index);
 
-            clock[index] = ((ulong)sample[1] << 48) | ((ulong)sample[2] << 32) | ((ulong)sample[3] << 16) | ((ulong)sample[4] << 0);
-            highLow[index] = sample[5];
+            clock[index] = ((ulong)sample[0] << 48) | ((ulong)sample[1] << 32) | ((ulong)sample[2] << 16) | ((ulong)sample[3] << 0);
+            port_state[index] = ((int)sample[4] << 16) | ((int) sample[5] << 0);
 
             return ++index == SamplesPerBlock;
         }
@@ -45,9 +45,9 @@ namespace Bonsai.OEPCIe
             get { return clock; }
         }
 
-        public ushort[] HighLow
+        public int[] PortState
         {
-            get { return highLow; }
+            get { return port_state; }
         }
     }
 }

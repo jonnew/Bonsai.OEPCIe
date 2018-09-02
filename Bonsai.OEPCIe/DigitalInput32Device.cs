@@ -10,15 +10,15 @@ namespace Bonsai.OEPCIe
 {
     using oe;
 
-    [Description("Aquires data from a single TS4231 light to digital converter chip.")]
-    public class LightHouseDevice : Source<LightHouseDataFrame>
+    [Description("A 32-bit digital input port.")]
+    public class DigitalInput32Device : Source<DigitalInput32DataFrame>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
         private Dictionary<int, oe.lib.device_t> devices;
-        IObservable<LightHouseDataFrame> source;
+        IObservable<DigitalInput32DataFrame> source;
         private int hardware_clock_hz;
 
-        public LightHouseDevice() {
+        public DigitalInput32Device() {
 
             // Reference to context
             this.oepcie = OEPCIeManager.ReserveDAQ();
@@ -28,7 +28,7 @@ namespace Bonsai.OEPCIe
 
             // Find all RHD devices
             devices = oepcie.DAQ.DeviceMap.Where(
-                    pair => pair.Value.id == (uint)Device.DeviceID.TS4231
+                    pair => pair.Value.id == (uint)Device.DeviceID.DINPUT32
             ).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no devices to use
@@ -38,10 +38,10 @@ namespace Bonsai.OEPCIe
             DeviceIndex = new DeviceIndexSelection();
             DeviceIndex.Indices = devices.Keys.ToArray();
 
-            source = Observable.Create<LightHouseDataFrame>(observer =>
+            source = Observable.Create<DigitalInput32DataFrame>(observer =>
             {
                 EventHandler<FrameReceivedEventArgs> inputReceived;
-                var data_block = new LightHouseDataBlock(BlockSize);
+                var data_block = new DigitalInput32DataBlock(BlockSize);
 
                 oepcie.Environment.Start();
 
@@ -56,8 +56,8 @@ namespace Bonsai.OEPCIe
                         // Pull the sample
                         if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                         {
-                            observer.OnNext(new LightHouseDataFrame(data_block, hardware_clock_hz));
-                            data_block = new LightHouseDataBlock(BlockSize);
+                            observer.OnNext(new DigitalInput32DataFrame(data_block, hardware_clock_hz));
+                            data_block = new DigitalInput32DataBlock(BlockSize);
                         }
                     }
                 };
@@ -71,16 +71,16 @@ namespace Bonsai.OEPCIe
             });
         }
 
-        public override IObservable<LightHouseDataFrame> Generate()
+        public override IObservable<DigitalInput32DataFrame> Generate()
         {
             return source;
         }
 
         [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
-        [Description("The TS4231 optical to digital converter handled by this node.")]
+        [Description("The 32-bit digital input port handled by this node.")]
         public DeviceIndexSelection DeviceIndex { get; set; }
 
-        [Range(1, 100)]
+        [Range(1, 10000)]
         [Description("The size of data blocks, in samples, that are propogated in the observable sequence.")]
         public int BlockSize { get; set; } = 5;
 

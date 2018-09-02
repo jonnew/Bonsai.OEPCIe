@@ -1,44 +1,59 @@
+
+%% Which sensor?
+idx = '3';
+
 %% Load raw data
-fid = fopen('timestamp.csv');
-x = textscan(fid,'%d -%d -%d T%d :%d :%f -%s');
-time_sec_0 =  double(x{4}(1) * 3600 + x{5}(1) * 60) + x{6}(1);
-ts = double(x{4}(:) .* 3600) + double(x{5}(:) .* 60) + x{6}(:) - time_sec_0;
+% fid = fopen(['timestamp' idx '.csv']);
+% x = textscan(fid,'%d -%d -%d T%d :%d :%f -%s');
+% time_sec_0 =  double(x{4}(1) * 3600 + x{5}(1) * 60) + x{6}(1);
+% ts = double(x{4}(:) .* 3600) + double(x{5}(:) .* 60) + x{6}(:) - time_sec_0;
+% fclose(fid);
+
+fid = fopen(['highlow' idx '.raw']);
+measurement = fread(fid, Inf, 'int16');
 fclose(fid);
 
-fid = fopen('delay.raw');
-delay = fread(fid, [numel(ts) 1], 'int32');
+fid = fopen(['remote' idx '.raw']);
+remote_time = fread(fid, Inf, 'double');
 fclose(fid);
 
-fid = fopen('type.raw');
-type = fread(fid, [numel(ts) 1], 'uint8');
-fclose(fid);
-
-fid = fopen('hwtime.raw');
-hw_time = fread(fid, [numel(ts) 1], 'double');
+fid = fopen(['local' idx '.raw']);
+local_time = fread(fid, Inf, 'double');
 fclose(fid);
 
 %% Cut off first few samples (seems like they are stuck in a pipe...)
-n_cut = 30;
-ts = ts(n_cut:end);
-delay = delay(n_cut:end);
-type = type(n_cut:end);
-hw_time = hw_time(n_cut:end);
+% n_cut = 30;
+% ts = ts(n_cut:end);
+% measurement = measurement(n_cut:end);
+% type = type(n_cut:end);
+% remote_time = remote_time(n_cut:end);
 
 %% Plots
 close all
-plot(hw_time,'-o')
+plot(remote_time,'-o')
 
 %%
-plot(type)
+close all
+stairs(remote_time(1:end/2), measurement(1:end/2))
+ylim([-0.1 1.1])
+
 %%
-subplot(211)
-plot(delay(type == 1)/10)
-ylim([0 10])
-title("Pulse width")
+histogram(diff(remote_time(measurement == 1)),[-0.001:0.00001:0.006])
+% plot(diff(remote_time))
+% ylim([-0.001 0.006])
 
-subplot(212)
-plot(delay(type == 0)/10)
-title("Pulse delay")
+%% Find first rising edge
+
+t1 = remote_time(measurement == 1);
+t0 = remote_time(measurement == 0);
+b = remote_time > t1(1) & remote_time < t0(end);
+
+t = remote_time(b);
+m = measurement(b);
 
 
+t1 = t(m == 1);
+t0 = t(m == 0);
+
+t1 - t0
 

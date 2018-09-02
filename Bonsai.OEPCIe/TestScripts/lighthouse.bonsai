@@ -1,25 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q1="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q3="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:LightHouseDevice">
-          <q1:DeviceIndex>1</q1:DeviceIndex>
-          <q1:BlockSize>5</q1:BlockSize>
+          <q1:DeviceIndex>
+            <q1:SelectedIndex>1</q1:SelectedIndex>
+            <q1:Indices>
+              <q1:int>1</q1:int>
+              <q1:int>2</q1:int>
+              <q1:int>3</q1:int>
+              <q1:int>4</q1:int>
+            </q1:Indices>
+          </q1:DeviceIndex>
+          <q1:BlockSize>50</q1:BlockSize>
+          <q1:RemoteClockHz>84000000</q1:RemoteClockHz>
         </Combinator>
       </Expression>
       <Expression xsi:type="MemberSelector">
-        <Selector>Source.Timestamp</Selector>
+        <Selector>Source.RemoteClock</Selector>
       </Expression>
       <Expression xsi:type="MemberSelector">
-        <Selector>Source.MeasurementType</Selector>
-      </Expression>
-      <Expression xsi:type="MemberSelector">
-        <Selector>Source.Delay</Selector>
+        <Selector>Source.LocalClock</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:MatrixWriter">
-          <q2:Path>delay.raw</q2:Path>
+          <q2:Path>highlow1.raw</q2:Path>
           <q2:Suffix>None</q2:Suffix>
           <q2:Overwrite>true</q2:Overwrite>
           <q2:Layout>ColumnMajor</q2:Layout>
@@ -27,7 +33,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:MatrixWriter">
-          <q2:Path>type.raw</q2:Path>
+          <q2:Path>remote1.raw</q2:Path>
           <q2:Suffix>None</q2:Suffix>
           <q2:Overwrite>true</q2:Overwrite>
           <q2:Layout>ColumnMajor</q2:Layout>
@@ -35,30 +41,65 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q2:MatrixWriter">
-          <q2:Path>hwtime.raw</q2:Path>
+          <q2:Path>local1.raw</q2:Path>
+          <q2:Suffix>None</q2:Suffix>
+          <q2:Overwrite>true</q2:Overwrite>
+          <q2:Layout>ColumnMajor</q2:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.HighLow</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MatrixWriter">
+          <q2:Path>local3.raw</q2:Path>
           <q2:Suffix>None</q2:Suffix>
           <q2:Overwrite>true</q2:Overwrite>
           <q2:Layout>ColumnMajor</q2:Layout>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="Timestamp" />
+        <Combinator xsi:type="q2:MatrixWriter">
+          <q2:Path>remote3.raw</q2:Path>
+          <q2:Suffix>None</q2:Suffix>
+          <q2:Overwrite>true</q2:Overwrite>
+          <q2:Layout>ColumnMajor</q2:Layout>
+        </Combinator>
       </Expression>
-      <Expression xsi:type="q3:CsvWriter">
-        <q3:FileName>timestamp.csv</q3:FileName>
-        <q3:Append>false</q3:Append>
-        <q3:Overwrite>true</q3:Overwrite>
-        <q3:Suffix>None</q3:Suffix>
-        <q3:IncludeHeader>false</q3:IncludeHeader>
-        <q3:Selector>Source.Timestamp</q3:Selector>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MatrixWriter">
+          <q2:Path>highlow3.raw</q2:Path>
+          <q2:Suffix>None</q2:Suffix>
+          <q2:Overwrite>true</q2:Overwrite>
+          <q2:Layout>ColumnMajor</q2:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.LocalClock</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.RemoteClock</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.HighLow</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:LightHouseDevice">
+          <q1:DeviceIndex>
+            <q1:SelectedIndex>3</q1:SelectedIndex>
+            <q1:Indices>
+              <q1:int>1</q1:int>
+              <q1:int>2</q1:int>
+              <q1:int>3</q1:int>
+              <q1:int>4</q1:int>
+            </q1:Indices>
+          </q1:DeviceIndex>
+          <q1:BlockSize>50</q1:BlockSize>
+          <q1:RemoteClockHz>84000000</q1:RemoteClockHz>
+        </Combinator>
       </Expression>
     </Nodes>
     <Edges>
-      <Edge>
-        <From>0</From>
-        <To>1</To>
-        <Label>Source1</Label>
-      </Edge>
       <Edge>
         <From>0</From>
         <To>2</To>
@@ -66,17 +107,17 @@
       </Edge>
       <Edge>
         <From>0</From>
-        <To>3</To>
+        <To>1</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>0</From>
-        <To>7</To>
+        <To>6</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>1</From>
-        <To>6</To>
+        <To>4</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -85,13 +126,38 @@
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>3</From>
-        <To>4</To>
+        <From>6</From>
+        <To>3</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>7</From>
+        <From>10</From>
+        <To>7</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>11</From>
         <To>8</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>12</From>
+        <To>9</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>13</From>
+        <To>10</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>13</From>
+        <To>11</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>13</From>
+        <To>12</To>
         <Label>Source1</Label>
       </Edge>
     </Edges>
@@ -99,7 +165,5 @@
   <ExtensionTypes>
     <Type>Bonsai.OEPCIe.LightHouseDevice, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.MatrixWriter, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Timestamp, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>

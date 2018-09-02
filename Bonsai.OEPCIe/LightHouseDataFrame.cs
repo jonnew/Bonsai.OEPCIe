@@ -1,24 +1,21 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using OpenCV.Net;
 
 namespace Bonsai.OEPCIe
 {
     public class LightHouseDataFrame
     {
-        public LightHouseDataFrame(LightHouseDataBlock dataBlock, int hardware_clock_hz, int remote_clock_hz)
+        public LightHouseDataFrame(LightHouseDataBlock dataBlock, int hardware_clock_hz)
         {
-            LocalClock = GetClock(dataBlock.LocalClock, hardware_clock_hz);
-            RemoteClock = GetClock(dataBlock.RemoteClock, remote_clock_hz); // TODO: remote clock rate?
-            ID = GetTypeData(dataBlock.ID);
-            MeasurementType = GetTypeData(dataBlock.MeasureType);
-            Delay = GetDelayData(dataBlock.Delay);
+            Time = GetTime(dataBlock.Clock, hardware_clock_hz);
+            Clock = GetClock(dataBlock.Clock);
+            HighLow = GetHighLowData(dataBlock.HighLow);
         }
 
-        Mat GetClock(ulong[] data, int hardware_clock_hz)
+        Mat GetTime(ulong[] data, int hardware_clock_hz)
         {
             var ts = new double[data.Count()];
-            double period_sec = 1.0 / (double)hardware_clock_hz;
+            double period_sec = 1.0 / hardware_clock_hz;
 
             for (int i = 0; i < data.Count(); i++)
                 ts[i] = period_sec * (double)data[i];
@@ -26,7 +23,12 @@ namespace Bonsai.OEPCIe
             return Mat.FromArray(ts, 1, data.Length, Depth.F64, 1);
         }
 
-        Mat GetTypeData(ushort[] data)
+        Mat GetClock(ulong[] data)
+        {
+            return Mat.FromArray(data, 1, data.Length, Depth.F64, 1); // TODO: abusing double to fit uint64_t
+        }
+
+        Mat GetHighLowData(ushort[] data)
         {
             if (data.Length == 0) return null;
 
@@ -39,27 +41,10 @@ namespace Bonsai.OEPCIe
             return output;
         }
 
-        Mat GetDelayData(uint[] data)
-        {
-            if (data.Length == 0) return null;
+        public Mat Clock { get; private set; }
 
-            var output = new Mat(1, data.Length, Depth.S32, 1);
-            using (var header = Mat.CreateMatHeader(Array.ConvertAll(data, item => (int)item)))
-            {
-                CV.Convert(header, output);
-            }
+        public Mat Time { get; private set; }
 
-            return output;
-        }
-
-        public Mat LocalClock { get; private set; }
-
-        public Mat RemoteClock { get; private set; }
-
-        public Mat ID { get; private set; }
-
-        public Mat MeasurementType { get; private set; }
-
-        public Mat Delay { get; private set; }
+        public Mat HighLow { get; private set; }
     }
 }

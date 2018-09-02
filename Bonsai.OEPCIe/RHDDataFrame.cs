@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using OpenCV.Net;
-
-namespace Bonsai.OEPCIe
+﻿namespace Bonsai.OEPCIe
 {
+    using System.Linq;
+    using OpenCV.Net;
+
     /// <summary>
     /// Provides Bonsai-friendly version of an RHDDataBlock
     /// </summary>
@@ -13,13 +10,18 @@ namespace Bonsai.OEPCIe
     {
         public RHDDataFrame(RHDDataBlock dataBlock, int hardware_clock_hz)
         {
-            LocalClock = GetTimestampData(dataBlock.LocalClock, hardware_clock_hz);
-            RemoteClock = GetTimestampData(dataBlock.RemoteClock, 100000000); // TODO: remote clock rate?
+            Clock = GetClock(dataBlock.Clock);
+            Time = GetTime(dataBlock.Clock, hardware_clock_hz);
             EphysData = GetEphysData(dataBlock.EphysData);
             AuxiliaryData = GetAuxiliaryData(dataBlock.AuxiliaryData);
         }
 
-        Mat GetTimestampData(ulong[] data, int hardware_clock_hz)
+        Mat GetClock(ulong[] data)
+        {
+            return Mat.FromArray(data, 1, data.Length, Depth.F64, 1); // TODO: abusing double to fit uint64_t
+        }
+
+        Mat GetTime(ulong[] data, int hardware_clock_hz)
         {
             var ts = new double[data.Count()];
             double period_sec = 1.0 / (double)hardware_clock_hz;
@@ -60,9 +62,9 @@ namespace Bonsai.OEPCIe
             return output;
         }
 
-        public Mat LocalClock { get; private set; }
+        public Mat Clock { get; private set; }
 
-        public Mat RemoteClock { get; private set; }
+        public Mat Time { get; private set; }
 
         public Mat EphysData { get; private set; }
 

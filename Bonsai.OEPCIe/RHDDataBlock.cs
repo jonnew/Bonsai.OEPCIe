@@ -17,7 +17,7 @@ namespace Bonsai.OEPCIe
         public readonly int NumAuxInChannels;
 
         private int index = 0;
-        ulong[] local_clock;
+        ulong[] clock;
         ulong[] remote_clock;
         int[,] ephysData;
         int[,] auxiliaryData;
@@ -28,8 +28,7 @@ namespace Bonsai.OEPCIe
             NumAuxInChannels = num_aux_in_channels;
             SamplesPerBlock = samples_per_block;
 
-            AllocateArray1D(ref local_clock, samples_per_block);
-            AllocateArray1D(ref remote_clock, samples_per_block);
+            AllocateArray1D(ref clock, samples_per_block);
             AllocateArray2D(ref ephysData, num_ephys_channels, samples_per_block);
             AllocateArray2D(ref auxiliaryData, num_aux_in_channels, samples_per_block);
         }
@@ -39,23 +38,21 @@ namespace Bonsai.OEPCIe
             if (index >= SamplesPerBlock)
                 throw new IndexOutOfRangeException();
 
-            local_clock[index] = frame.Time();
+            clock[index] = frame.Time();
 
             // [uint64_t local_clock, uint16_t ephys1, uint16_t ephys2, ... , uint16_t aux1, uint16_t aux2, ...]
             var data = frame.Data<ushort>(device_index);
 
-            // TODO
-            //remote_clock[index] = ((ulong)data[0] << 48) | ((ulong)data[1] << 32) | ((ulong)data[2] << 16) | ((ulong)data[3] << 0);
+            clock[index] = ((ulong)data[0] << 48) | ((ulong)data[1] << 32) | ((ulong)data[2] << 16) | ((ulong)data[3] << 0);
 
-            // TODO int chan = 4;
-            int chan = 0;
+            int chan = 0; 
             for (; chan < NumChannels; chan++)
             {
-                ephysData[chan, index] = data[chan];
+                ephysData[chan, index] = data[chan + 4]; // Start at index 4
             }
             for (int k = 0; k < NumAuxInChannels; k++)
             {
-                auxiliaryData[k, index] = data[chan++]; 
+                auxiliaryData[k, index] = data[4 + chan++]; 
             }
 
             return ++index == SamplesPerBlock;
@@ -76,17 +73,9 @@ namespace Bonsai.OEPCIe
         /// <summary>
         /// Gets the array of 64-bit unsigned local hardware clock.
         /// </summary>
-        public ulong[] LocalClock
+        public ulong[] Clock
         {
-            get { return local_clock; }
-        }
-
-        /// <summary>
-        /// Gets the array of 64-bit unsigned remote hardware clock.
-        /// </summary>
-        public ulong[] RemoteClock
-        {
-            get { return remote_clock; }
+            get { return clock; }
         }
 
         /// <summary>

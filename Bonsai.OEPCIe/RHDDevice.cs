@@ -24,7 +24,7 @@ namespace Bonsai.OEPCIe
             this.oepcie = OEPCIeManager.ReserveDAQ();
 
             // Find the hardware clock rate
-            hardware_clock_hz = oepcie.DAQ.GetOption(Context.Option.SYSCLKHZ);
+            hardware_clock_hz = oepcie.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
             devices = oepcie.DAQ.DeviceMap.Where(
@@ -71,6 +71,7 @@ namespace Bonsai.OEPCIe
                 return Disposable.Create(() =>
                 {
                     oepcie.Environment.FrameInputReceived -= inputReceived;
+                    oepcie.Environment.Stop();
                     oepcie.Dispose();
                 });
             });
