@@ -13,6 +13,22 @@ namespace Bonsai.OEPCIe
     [Description("A 32-bit digital input port.")]
     public class DigitalInput32Device : Source<DigitalInput32DataFrame>
     {
+        // Control registers (see oedevices.h)
+        enum Register
+        {
+            DINPUT32_NULLPARM = 0, // No command
+            DINPUT32_NUM = 1, // Select a digital input pin to control (0-31)
+            DINPUT32_TERM = 2, // Toggle 50 ohm termination (0 = Off, other = On)
+            DINPUT32_LLEVEL = 3, // Set logic threshold level (0-255, actual voltage depends on circuitry)
+        }
+
+        enum Code
+        {
+            WATCHDOG = 0,         // Frame not sent withing watchdog threshold
+            SERDESPARITY,     // SERDES parity error detected
+            SERDESCHKSUM,     // SERDES packet checksum error detected
+        }
+
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
         private Dictionary<int, oe.lib.device_t> devices;
         IObservable<DigitalInput32DataFrame> source;

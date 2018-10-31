@@ -33,6 +33,6 @@ namespace Bonsai.OEPCIe
             {
                 SelectedIndex = int.Parse(str_idx);
             }
-        } 
+        }
     }
 }

@@ -32,7 +32,7 @@
             return Mat.FromArray(ts, 1, data.Length, Depth.F64, 1); 
         }
 
-        Mat GetEphysData(int[,] data)
+        Mat GetEphysData(ushort[,] data)
         {
             if (data.Length == 0) return null;
             var numChannels = data.GetLength(0);

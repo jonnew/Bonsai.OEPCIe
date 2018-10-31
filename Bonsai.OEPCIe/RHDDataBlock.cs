@@ -18,8 +18,7 @@ namespace Bonsai.OEPCIe
 
         private int index = 0;
         ulong[] clock;
-        ulong[] remote_clock;
-        int[,] ephysData;
+        ushort[,] ephysData;
         int[,] auxiliaryData;
 
         public RHDDataBlock(int num_ephys_channels, int samples_per_block = 250, int num_aux_in_channels = 3)
@@ -70,6 +69,11 @@ namespace Bonsai.OEPCIe
             array2D = new int[xSize, ySize];
         }
 
+        // Allocates memory for a 2-D array of ushorts.
+        void AllocateArray2D(ref ushort[,] array2D, int xSize, int ySize)
+        {
+            array2D = new ushort[xSize, ySize];
+        }
         /// <summary>
         /// Gets the array of 64-bit unsigned local hardware clock.
         /// </summary>
@@ -81,7 +85,7 @@ namespace Bonsai.OEPCIe
         /// <summary>
         /// Gets the array of multidimensional amplifier data samples, indexed by data stream.
         /// </summary>
-        public int[,] EphysData
+        public ushort[,] EphysData
         {
             get { return ephysData; }
         }

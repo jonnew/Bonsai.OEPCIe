@@ -88,9 +88,10 @@ namespace Bonsai.OEPCIe
             SAMPLERATE = 1,
         }
 
+        [TypeConverter(typeof(DeviceIndexSelectionTypeConverter))]
         [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
         [Description("The RHD device handled by this node.")]
-        public DeviceIndexSelection DeviceIndex { get; set; }
+        public DeviceIndexSelection DeviceIndex { get;  set; }
 
         // TODO: Implement these to affect configuration registers. They dont do anything right now.
 
