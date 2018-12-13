@@ -5,46 +5,32 @@ namespace Bonsai.OEPCIe
 {
     public class LightHouseDataFrame
     {
-        public LightHouseDataFrame(LightHouseDataBlock dataBlock, int hardware_clock_hz)
+        public LightHouseDataFrame(oe.Frame frame, int device_index, int sample_clock_hz, int sys_clock_hz)
         {
-            Time = GetTime(dataBlock.Clock, hardware_clock_hz);
-            Clock = GetClock(dataBlock.Clock);
-            HighLow = GetHighLowData(dataBlock.HighLow);
+            // NB: Data contents: [uint64_t remote_clock, uint16_t width, int16_t type]
+            var sample = frame.Data<ushort>(device_index);
+
+            // Times
+            FrameClock = frame.Time();
+            FrameTime = frame.Time() / (double)sys_clock_hz;
+            Clock = ((ulong)sample[0] << 48) | ((ulong)sample[1] << 32) | ((ulong)sample[2] << 16) | ((ulong)sample[3] << 0);
+            Time = Clock / (double)sample_clock_hz;
+
+            // Data
+            PulseWidth = sample[4]; // TODO: once sample clock is sent from headstage / (double)sample_clock_hz;
+            PulseType = (short)sample[5];
         }
 
-        Mat GetTime(ulong[] data, int hardware_clock_hz)
-        {
-            var ts = new double[data.Count()];
-            double period_sec = 1.0 / hardware_clock_hz;
+        public ulong FrameClock { get; private set; }
 
-            for (int i = 0; i < data.Count(); i++)
-                ts[i] = period_sec * (double)data[i];
+        public double FrameTime { get; private set; }
 
-            return Mat.FromArray(ts, 1, data.Length, Depth.F64, 1);
-        }
+        public ulong Clock { get; private set; }
 
-        Mat GetClock(ulong[] data)
-        {
-            return Mat.FromArray(data, 1, data.Length, Depth.F64, 1); // TODO: abusing double to fit uint64_t
-        }
+        public double Time { get; private set; }
 
-        Mat GetHighLowData(ushort[] data)
-        {
-            if (data.Length == 0) return null;
+        public ushort PulseWidth { get; private set; }
 
-            var output = new Mat(1, data.Length, Depth.U16, 1);
-            using (var header = Mat.CreateMatHeader(data))
-            {
-                CV.Convert(header, output);
-            }
-
-            return output;
-        }
-
-        public Mat Clock { get; private set; }
-
-        public Mat Time { get; private set; }
-
-        public Mat HighLow { get; private set; }
+        public short PulseType { get; private set; }
     }
 }

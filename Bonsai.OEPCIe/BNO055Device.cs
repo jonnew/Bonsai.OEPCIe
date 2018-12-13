@@ -10,25 +10,32 @@ namespace Bonsai.OEPCIe
 {
     using oe;
 
-    [Description("Aquires data from a single TS4231 light to digital converter chip.")]
-    public class LightHouseDevice : Source<LightHouseDataFrame>
+    [Description("BNO055 inertial measurement unit.")]
+    public class BNO055Device : Source<BNO055DataFrame>
     {
+        // Control registers (see oedevices.h)
+        //enum Register
+        //{
+        //      TODO: control device over i2c?
+        //}
+
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
         private Dictionary<int, oe.lib.device_t> devices;
-        IObservable<LightHouseDataFrame> source;
+        IObservable<BNO055DataFrame> source;
 
-        public LightHouseDevice() {
+        public BNO055Device()
+        {
 
             // Reference to context
             this.oepcie = OEPCIeManager.ReserveDAQ();
 
             // Find the hardware clock rate
             var sys_clock_hz = oepcie.DAQ.SystemClockHz;
-            var sample_clock_hz = oepcie.DAQ.AcquisitionClockHz;
+            var hardware_clock_hz = oepcie.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
             devices = oepcie.DAQ.DeviceMap.Where(
-                    pair => pair.Value.id == (uint)Device.DeviceID.TS4231
+                    pair => pair.Value.id == (uint)Device.DeviceID.BNO055
             ).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no devices to use
@@ -38,7 +45,7 @@ namespace Bonsai.OEPCIe
             DeviceIndex = new DeviceIndexSelection();
             DeviceIndex.Indices = devices.Keys.ToArray();
 
-            source = Observable.Create<LightHouseDataFrame>(observer =>
+            source = Observable.Create<BNO055DataFrame>(observer =>
             {
                 EventHandler<FrameReceivedEventArgs> inputReceived;
 
@@ -50,7 +57,7 @@ namespace Bonsai.OEPCIe
 
                     // If this frame contains data from the selected device_index
                     if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
-                        observer.OnNext(new LightHouseDataFrame(frame, DeviceIndex.SelectedIndex, sample_clock_hz, sys_clock_hz));
+                        observer.OnNext(new BNO055DataFrame(frame, DeviceIndex.SelectedIndex, hardware_clock_hz, sys_clock_hz));
                 };
 
                 oepcie.Environment.FrameInputReceived += inputReceived;
@@ -62,21 +69,13 @@ namespace Bonsai.OEPCIe
             });
         }
 
-        public override IObservable<LightHouseDataFrame> Generate()
+        public override IObservable<BNO055DataFrame> Generate()
         {
             return source;
         }
 
         [Editor("Bonsai.OEPCIe.Design.DeviceIndexCollectionEditor, Bonsai.OEPCIe.Design", typeof(UITypeEditor))]
-        [Description("The TS4231 optical to digital converter handled by this node.")]
+        [Description("The information device handled by this node.")]
         public DeviceIndexSelection DeviceIndex { get; set; }
-
-        [Range(1, 100)]
-        [Description("The size of data blocks, in samples, that are propogated in the observable sequence.")]
-        public int BlockSize { get; set; } = 5;
-
-        [Range(0, (int)1e9)]
-        [Description("The remote clock frequency in Hz.")]
-        public int SampleClockHz { get; set; } = (int)42e6;
     }
 }

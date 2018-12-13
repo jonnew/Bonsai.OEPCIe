@@ -56,6 +56,7 @@ namespace Bonsai.OEPCIe
                 TokenSource.Cancel();
                 Task.WaitAll(CollectFrames); // Wait for theads to exit
                 DAQ.Stop(); // Stop the hardware
+                DAQ.Reset();
             }
         }
 
