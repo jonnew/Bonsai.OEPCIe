@@ -1,15 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.props" Condition="Exists('..\packages\OpenCV.Net.3.3.1\build\net40\OpenCV.Net.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{07293297-8061-4C5D-BAA6-06386BB7D67C}</ProjectGuid>
+    <ProjectGuid>{BD39F27F-CC27-4335-B830-1039F0C1A44A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Bonsai.OEPCIe</RootNamespace>
-    <AssemblyName>Bonsai.OEPCIe</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Bonsai.OEPCIE.Prototyping</RootNamespace>
+    <AssemblyName>Bonsai.OEPCIE.Prototyping</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -22,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,12 +32,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <BuildPackage>true</BuildPackage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -47,24 +49,6 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -80,7 +64,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Design" />
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
@@ -97,53 +80,33 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BNO055DataFrame.cs" />
-    <Compile Include="BNO055Device.cs" />
-    <Compile Include="DeviceIndexSelection.cs" />
-    <Compile Include="DeviceIndexSelectionTypeConverter.cs" />
-    <Compile Include="ElectricalStimulator.cs" />
-    <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FrameReceivedEventArgs.cs" />
-    <Compile Include="DigitalInput32DataBlock.cs" />
-    <Compile Include="InfoDevice.cs" />
-    <Compile Include="InfoDataFrame.cs" />
-    <Compile Include="DigitalInput32DataFrame.cs" />
-    <Compile Include="LightHouseDataFrame.cs" />
-    <Compile Include="DigitalInput32Device.cs" />
-    <Compile Include="LightHouseDevice.cs" />
-    <Compile Include="OEPCIe.cs" />
-    <Compile Include="OEPCIeConfiguration.cs" />
-    <Compile Include="OEPCIeConfigurationCollection.cs" />
-    <Compile Include="OEPCIeDisposable.cs" />
-    <Compile Include="OEPCIeManager.cs" />
+    <Compile Include="PCECameraWriter.cs" />
+    <Compile Include="PCECameraReader.cs" />
+    <Compile Include="PCEImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RHDDataBlock.cs" />
-    <Compile Include="RHDDataFrame.cs" />
-    <Compile Include="RHDDevice.cs" />
-    <Compile Include="TestDevice.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Bonsai.OEPCIe.nuspec" />
-    <None Include="Bonsai.OEPCIe.props">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\open-ephys-pcie\api\clroepcie\clroepcie\clroepcie.csproj">
       <Project>{1524a9f6-323d-472d-b2f0-cadaea637fd2}</Project>
       <Name>clroepcie</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Bonsai.OEPCIe.Design\Bonsai.OEPCIe.Design.csproj">
+      <Project>{dd64535c-476b-48ef-ba56-52e4a3d1fafa}</Project>
+      <Name>Bonsai.OEPCIe.Design</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bonsai.OEPCIe\Bonsai.OEPCIe.csproj">
+      <Project>{07293297-8061-4c5d-baa6-06386bb7d67c}</Project>
+      <Name>Bonsai.OEPCIe</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <StartAction>Program</StartAction>
-    <StartProgram>$(registry:HKEY_CURRENT_USER\Software\Goncalo Lopes\Bonsai@InstallDir)Bonsai.exe</StartProgram>
-    <StartArguments>--lib:"$(TargetDir)."</StartArguments>
-  </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>

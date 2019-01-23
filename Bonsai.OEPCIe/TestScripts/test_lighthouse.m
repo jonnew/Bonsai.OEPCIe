@@ -147,6 +147,8 @@ for diode = 1:4
             
             pos_t{diode} = [pos_t{diode}; sample_t];
             pos{diode} = [pos{diode}; p'];
+            
+            
 
 %             % Plot the vectors and intersections
 %             clf
@@ -170,26 +172,18 @@ for diode = 1:4
 %             zlabel('z')
 %             view(3); %[0 0])
 %             drawnow
-
-
-
         end
     end
 
 end
+
+
 
 %% Angles
 % clf; plot(angle./pi);
 % legend('theta0', 'gamma0', 'theta1', 'gamma1');
 % ylim([-.5 .5]*pi)
 
-%% Position time series
-figure
-hold all
-for i = 1: numel(pos)
-    plot(pos_t{i}, pos{i}, '.');
-end
-legend('x', 'y', 'z');
 
 %%
 figure
@@ -201,27 +195,27 @@ end
 axis([-1 1 -1 1])
 xlabel('x')
 ylabel('y')
-axis square
+daspect([1 1 1]);
 
 subplot(222)
 hold all
 for i = 1: numel(pos)
     scatter(pos{i}(:,1), pos{i}(:,3), '.')
 end
-axis([-1 1 0 1])
+axis([-1 1 0 2])
 xlabel('x')
 ylabel('z')
-axis square
+daspect([1 1 1]);
 
 subplot(223)
 hold all
 for i = 1: numel(pos)
     scatter(pos{i}(:,2), pos{i}(:,3), '.')
 end
-axis([-1 1 0 1])
+axis([-1 1 0 2])
 xlabel('y')
 ylabel('z')
-axis square
+daspect([1 1 1]);
 
 subplot(224)
 hold all
@@ -229,6 +223,122 @@ for i = 1: numel(pos)
     plot3(pos{i}(:,1), pos{i}(:,2), pos{i}(:,3), '.')
 end
 daspect([1 1 1]);
+view(3)
+
+%% Interpolate positions across time
+close all
+% Find min/max of pos time
+min_t =  min(pos_t{i});
+max_t = max(pos_t{i});
+tq = min_t:period:max_t;
+
+% Find gaps in data and remove
+thresh = 0.5;
+for i = 1: numel(pos)
+    bad_idx = find(diff(pos_t{i}) > thresh);
+    
+    for j = 1: numel(bad_idx)
+       tq(tq >= pos_t{i}(bad_idx(j)) & tq <= pos_t{i}(bad_idx(j) + 1)) = [];
+    end
+end
+
+pos_1 = interp1(pos_t{1}, pos{1}, tq);
+pos_2 = interp1(pos_t{2}, pos{2}, tq);
+pos_3 = interp1(pos_t{3}, pos{3}, tq);
+pos_4 = interp1(pos_t{4}, pos{4}, tq);
+
+
+%% Get vectors normal to headstage plane
+n_vec = zeros(numel(tq), 3);
+f_vec = zeros(numel(tq), 3);
+h_vec = zeros(numel(tq), 3);
+% vecs2 =  zeros(numel(tq), 3);
+mids = zeros(numel(tq), 3);
+for i = 1: numel(tq)
+   
+    % SVD method
+    X = [pos_1(i, :)', pos_2(i, :)', pos_3(i, :)', pos_4(i, :)'];
+    mids(i, :) = mean(X, 2)';
+    X = X - mean(X, 2);
+    
+    if  sum(isnan(X(:)))
+        n_vec(i, :) = nan(1,3);
+        f_vec(i, :) = nan(1,3);
+        h_vec(i, :) = nan(1,3);
+    else
+        [U, S, V] = svd(X);
+        f_vec(i, :) = U(:, 1)';
+        h_vec(i, :) = U(:, 2)';
+        n_vec(i, :) = U(:, 3)';
+    end
+    
+%     % cross product
+%     v1 = pos_2(i, :) - pos_1(i, :);
+%     v2 = pos_3(i, :) - pos_1(i, :);
+%     vecs2(i,:) = cross(v1, v2);
+%     vecs2(i,:) = vecs2(i,:)/ norm(vecs2(i,:));
+end
+
+% hold all
+% plot(pos_1)
+% plot(pos_2)
+% plot(pos_3)
+% plot(pos_4)
+
+%% Summary
+
+% Position time series
+close all
+figure
+
+subplot(121)
+for i = 1: numel(pos)
+    plot(pos_t{i}, pos{i}, '.');
+end
+legend('x', 'y', 'z');
+xlabel('time (sec)')
+ylabel('distance (m)')
+
+subplot(122)
+hold on;
+
+view(3)
+xlabel('x (m)')
+ylabel('y (m)')
+zlabel('z (m)')
+daspect([1 1 1]);
+
+for i = 1 : numel(tq)
+%     dirvec=(pos_1(i,:)-pos_2(i,:)).*5;
+    dirvec = n_vec(i, :) * 0.01;
+    plot3([mids(i, 1), mids(i, 1)+dirvec(1)],[mids(i, 2), mids(i, 2)+dirvec(2)], [mids(i, 3),mids(i, 3)+dirvec(3)],'k');
+    
+    dirvec = h_vec(i, :) * 0.01;
+    plot3([mids(i, 1), mids(i, 1)+dirvec(1)],[mids(i, 2), mids(i, 2)+dirvec(2)], [mids(i, 3),mids(i, 3)+dirvec(3)],'b');
+    
+    dirvec = f_vec(i, :) * 0.01;
+    plot3([mids(i, 1), mids(i, 1)+dirvec(1)],[mids(i, 2), mids(i, 2)+dirvec(2)], [mids(i, 3),mids(i, 3)+dirvec(3)],'r');
+    
+    plot3([mids(i, 1)],[mids(i, 2)], [mids(i, 3)],'k.')
+    
+%     pgon = polyshape([0 0 1 1],[1 0 0 1]);
+%     poly = [[pos_1(i, 1), pos_2(i, 1), pos_3(i, 1), pos_4(i, 1), pos_1(i, 1)];
+%             [pos_1(i, 2),pos_2(i, 2), pos_3(i, 2), pos_4(i, 2), pos_1(i, 2)];
+%             [pos_1(i, 3),pos_2(i, 3), pos_3(i, 3), pos_4(i, 3), pos_1(i, 3)]];
+%     
+%     fill3(poly(1, :), poly(2, :), poly(3, :), [1 1 1 1 0])
+%     plot3(poly,'r');
+    
+%     plot3([pos_1(i, 1),pos_2(i, 1), pos_3(i, 1), pos_4(i, 1), pos_1(i, 1)], ...
+%         [pos_1(i, 2),pos_2(i, 2), pos_3(i, 2), pos_4(i, 2), pos_1(i, 2)],...
+%         [pos_1(i, 3),pos_2(i, 3), pos_3(i, 3), pos_4(i, 3), pos_1(i, 3)]);
+%     
+%     drawnow;
+end
+
+
+
+
 
 
 

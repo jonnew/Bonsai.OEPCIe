@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Bonsai.OEPCIe
 {
-    class DeviceIndexSelectionTypeConverter : TypeConverter
+    public class DeviceIndexSelectionTypeConverter : TypeConverter
     {
         // Overrides the CanConvertFrom method of TypeConverter.
         // The ITypeDescriptorContext interface provides the context for the

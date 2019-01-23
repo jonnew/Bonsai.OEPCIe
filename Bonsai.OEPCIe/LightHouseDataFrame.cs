@@ -11,8 +11,8 @@ namespace Bonsai.OEPCIe
             var sample = frame.Data<ushort>(device_index);
 
             // Times
-            FrameClock = frame.Time();
-            FrameTime = frame.Time() / (double)sys_clock_hz;
+            FrameClock = frame.Clock();
+            FrameTime = FrameClock / (double)sys_clock_hz;
             Clock = ((ulong)sample[0] << 48) | ((ulong)sample[1] << 32) | ((ulong)sample[2] << 16) | ((ulong)sample[3] << 0);
             Time = Clock / (double)sample_clock_hz;
 

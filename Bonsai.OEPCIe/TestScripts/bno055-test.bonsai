@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0-preview">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns="https://horizongir.org/bonsai">
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:BNO055Device">
+          <q1:DeviceIndex>
+            <q1:SelectedIndex>10</q1:SelectedIndex>
+            <q1:Indices>
+              <q1:int>10</q1:int>
+            </q1:Indices>
+          </q1:DeviceIndex>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Quaternion</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>LinearAcceleration</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>GravityVector</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:DrawMesh">
+          <q2:ShaderName>PerPixelLight</q2:ShaderName>
+          <q2:MeshName>Suzanne</q2:MeshName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>modelview</q2:UniformName>
+          <q2:ShaderName>PerPixelLight</q2:ShaderName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>light</q2:UniformName>
+          <q2:ShaderName>PerPixelLight</q2:ShaderName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Multiply" />
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:CreateVector3">
+          <q2:X>0</q2:X>
+          <q2:Y>0</q2:Y>
+          <q2:Z>5</q2:Z>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Zip" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateUniform">
+          <q2:UniformName>projection</q2:UniformName>
+          <q2:ShaderName>PerPixelLight</q2:ShaderName>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:CreateQuaternionRotation">
+          <q2:Rotation>
+            <q2:Xyz>
+              <q2:X>0</q2:X>
+              <q2:Y>0</q2:Y>
+              <q2:Z>0</q2:Z>
+            </q2:Xyz>
+            <q2:W>1</q2:W>
+          </q2:Rotation>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:CreateLookAt">
+          <q2:Eye>
+            <q2:X>0</q2:X>
+            <q2:Y>0</q2:Y>
+            <q2:Z>5</q2:Z>
+          </q2:Eye>
+          <q2:Target>
+            <q2:X>0</q2:X>
+            <q2:Y>0</q2:Y>
+            <q2:Z>0</q2:Z>
+          </q2:Target>
+          <q2:Up>
+            <q2:X>0</q2:X>
+            <q2:Y>1</q2:Y>
+            <q2:Z>0</q2:Z>
+          </q2:Up>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:CreatePerspectiveFieldOfView">
+          <q2:FovY>1.04719758</q2:FovY>
+          <q2:AspectRatio>1</q2:AspectRatio>
+          <q2:NearClip>0.1</q2:NearClip>
+          <q2:FarClip>1000</q2:FarClip>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateFrame" />
+      </Expression>
+      <Expression xsi:type="ExternalizedPropertyOfQuaternionCreateQuaternionRotation">
+        <MemberName>Rotation</MemberName>
+        <Name>Rotation</Name>
+        <Value>
+          <Xyz>
+            <X>0</X>
+            <Y>0</Y>
+            <Z>0</Z>
+          </Xyz>
+          <W>1</W>
+        </Value>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateFrame" />
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge>
+        <From>0</From>
+        <To>1</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>0</From>
+        <To>2</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>0</From>
+        <To>3</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>6</From>
+        <To>4</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>7</From>
+        <To>5</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>8</From>
+        <To>6</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>9</From>
+        <To>7</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>10</From>
+        <To>8</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>11</From>
+        <To>9</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>12</From>
+        <To>9</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>13</From>
+        <To>10</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>14</From>
+        <To>11</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>14</From>
+        <To>12</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>15</From>
+        <To>11</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>16</From>
+        <To>13</To>
+        <Label>Source1</Label>
+      </Edge>
+    </Edges>
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.OEPCIe.BNO055Device, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.DrawMesh, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.UpdateUniform, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.CreateVector3, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.CreateQuaternionRotation, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.CreateLookAt, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.CreatePerspectiveFieldOfView, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.UpdateFrame, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.ExternalizedProperty`2[[OpenTK.Quaternion, OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4],[Bonsai.Shaders.CreateQuaternionRotation, Bonsai.Shaders, Version=0.19.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>

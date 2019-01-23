@@ -9,17 +9,11 @@ idx = '3';
 % ts = double(x{4}(:) .* 3600) + double(x{5}(:) .* 60) + x{6}(:) - time_sec_0;
 % fclose(fid);
 
-fid = fopen(['highlow' idx '.raw']);
-measurement = fread(fid, Inf, 'int16');
+fid = fopen('lh1.raw');
+type = fread(fid, Inf, 'int16');
 fclose(fid);
 
-fid = fopen(['remote' idx '.raw']);
-remote_time = fread(fid, Inf, 'double');
-fclose(fid);
 
-fid = fopen(['local' idx '.raw']);
-local_time = fread(fid, Inf, 'double');
-fclose(fid);
 
 %% Cut off first few samples (seems like they are stuck in a pipe...)
 % n_cut = 30;

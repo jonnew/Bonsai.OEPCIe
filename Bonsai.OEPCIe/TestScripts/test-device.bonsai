@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.3.0">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="https://horizongir.org/bonsai">
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:TestDevice">
+          <q1:DeviceIndex>1</q1:DeviceIndex>
+          <q1:ReadSize>12</q1:ReadSize>
+          <q1:ElementDepth>U16</q1:ElementDepth>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:TestDevice">
+          <q1:DeviceIndex>2</q1:DeviceIndex>
+          <q1:ReadSize>12</q1:ReadSize>
+          <q1:ElementDepth>U16</q1:ElementDepth>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:TestDevice">
+          <q1:DeviceIndex>3</q1:DeviceIndex>
+          <q1:ReadSize>12</q1:ReadSize>
+          <q1:ElementDepth>U16</q1:ElementDepth>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:TestDevice">
+          <q1:DeviceIndex>4</q1:DeviceIndex>
+          <q1:ReadSize>12</q1:ReadSize>
+          <q1:ElementDepth>U16</q1:ElementDepth>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:TestDevice">
+          <q1:DeviceIndex>0</q1:DeviceIndex>
+          <q1:ReadSize>12</q1:ReadSize>
+          <q1:ElementDepth>U16</q1:ElementDepth>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges />
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.OEPCIe.TestDevice, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>

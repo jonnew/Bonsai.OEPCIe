@@ -10,8 +10,8 @@ namespace Bonsai.OEPCIe
             // NB: Data contents: [uint64_t remote_clock, uint16_t code]
             var sample = frame.Data<ushort>(device_index);
 
-            FrameClock = frame.Time();
-            FrameTime = frame.Time() / (double)sys_clock_hz;
+            FrameClock = frame.Clock();
+            FrameTime = FrameClock / (double)sys_clock_hz;
             Clock = ((ulong)sample[0] << 48) | ((ulong)sample[1] << 32) | ((ulong)sample[2] << 16) | ((ulong)sample[3] << 0);
             Time = Clock / (double)hardware_clock_hz;
             Code = sample[4];
