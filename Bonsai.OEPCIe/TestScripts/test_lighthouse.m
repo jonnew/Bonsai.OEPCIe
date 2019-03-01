@@ -133,7 +133,7 @@ for diode = 1:4
 
 
             d = q0 - p0;
-            r = [[dot(u, u), -dot(u, v)];[ dot(u, v), -dot(v, v)]] \ [dot(u, d); dot(v, d)];
+            r = [[1, -dot(u, v)];[ dot(u, v), -1]] \ [dot(u, d); dot(v, d)];
 
             p1 = p0 + r(1) * u;
             q1 = q0 + r(2) * v;
@@ -254,6 +254,7 @@ f_vec = zeros(numel(tq), 3);
 h_vec = zeros(numel(tq), 3);
 % vecs2 =  zeros(numel(tq), 3);
 mids = zeros(numel(tq), 3);
+u_det = [];
 for i = 1: numel(tq)
    
     % SVD method
@@ -267,6 +268,7 @@ for i = 1: numel(tq)
         h_vec(i, :) = nan(1,3);
     else
         [U, S, V] = svd(X);
+        u_det = [u_det; det(U)];
         f_vec(i, :) = U(:, 1)';
         h_vec(i, :) = U(:, 2)';
         n_vec(i, :) = U(:, 3)';

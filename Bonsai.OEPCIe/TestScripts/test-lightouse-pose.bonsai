@@ -1,0 +1,376 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0-preview">
+  <Workflow xmlns:q2="clr-namespace:Bonsai.OEPCIe.Prototyping;assembly=Bonsai.OEPCIE.Prototyping" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q3="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q4="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q1="clr-namespace:Bonsai.IO;assembly=Bonsai.System" xmlns="https://horizongir.org/bonsai">
+    <Nodes>
+      <Expression xsi:type="q1:CsvReader">
+        <q1:FileName>lh1-comma.csv</q1:FileName>
+        <q1:ScanPattern>%l,%i,%i,</q1:ScanPattern>
+        <q1:SkipRows>0</q1:SkipRows>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MakeLightHouseDataFrame" />
+      </Expression>
+      <Expression xsi:type="q1:CsvReader">
+        <q1:FileName>lh2-comma.csv</q1:FileName>
+        <q1:ScanPattern>%l,%i,%i,</q1:ScanPattern>
+        <q1:SkipRows>0</q1:SkipRows>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MakeLightHouseDataFrame" />
+      </Expression>
+      <Expression xsi:type="q1:CsvReader">
+        <q1:FileName>lh3-comma.csv</q1:FileName>
+        <q1:ScanPattern>%l,%i,%i,</q1:ScanPattern>
+        <q1:SkipRows>0</q1:SkipRows>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MakeLightHouseDataFrame" />
+      </Expression>
+      <Expression xsi:type="q1:CsvReader">
+        <q1:FileName>lh4-comma.csv</q1:FileName>
+        <q1:ScanPattern>%l,%i,%i,</q1:ScanPattern>
+        <q1:SkipRows>0</q1:SkipRows>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MakeLightHouseDataFrame" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:LightHouseFrameToPosition">
+          <q3:P>
+            <q3:X>0</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:P>
+          <q3:Q>
+            <q3:X>-0.63</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:Q>
+          <q3:SweepFrequency>60</q3:SweepFrequency>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:LightHouseFrameToPosition">
+          <q3:P>
+            <q3:X>0</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:P>
+          <q3:Q>
+            <q3:X>-0.63</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:Q>
+          <q3:SweepFrequency>60</q3:SweepFrequency>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:LightHouseFrameToPosition">
+          <q3:P>
+            <q3:X>0</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:P>
+          <q3:Q>
+            <q3:X>-0.63</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:Q>
+          <q3:SweepFrequency>60</q3:SweepFrequency>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:LightHouseFrameToPosition">
+          <q3:P>
+            <q3:X>0</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:P>
+          <q3:Q>
+            <q3:X>-0.63</q3:X>
+            <q3:Y>0</q3:Y>
+            <q3:Z>0</q3:Z>
+          </q3:Q>
+          <q3:SweepFrequency>60</q3:SweepFrequency>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="CombineLatest" />
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="q1:CsvReader">
+          <q1:FileName>lh1-comma.csv</q1:FileName>
+          <q1:ScanPattern>%l,%i,%i,</q1:ScanPattern>
+          <q1:SkipRows>0</q1:SkipRows>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="q2:MakeLightHouseDataFrame" />
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="Timer">
+            <DueTime>PT0S</DueTime>
+            <Period>PT0.1S</Period>
+          </Combinator>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="Zip" />
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="MemberSelector">
+          <Selector>Item2</Selector>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="q3:LightHouseFrameToPosition">
+            <q3:P>
+              <q3:X>0</q3:X>
+              <q3:Y>0</q3:Y>
+              <q3:Z>0</q3:Z>
+            </q3:P>
+            <q3:Q>
+              <q3:X>1</q3:X>
+              <q3:Y>0</q3:Y>
+              <q3:Z>0</q3:Z>
+            </q3:Q>
+            <q3:SweepFrequency>60</q3:SweepFrequency>
+          </Combinator>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="MemberSelector">
+          <Selector>Time</Selector>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="MemberSelector">
+          <Selector>Point</Selector>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="MemberSelector">
+          <Selector>Matrix</Selector>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q4:MatrixWriter">
+          <q4:Path>orientation-result.raw</q4:Path>
+          <q4:Suffix>None</q4:Suffix>
+          <q4:Overwrite>true</q4:Overwrite>
+          <q4:Layout>ColumnMajor</q4:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="q1:CsvWriter">
+        <q1:FileName>lh1-position.csv</q1:FileName>
+        <q1:Append>false</q1:Append>
+        <q1:Overwrite>true</q1:Overwrite>
+        <q1:Suffix>None</q1:Suffix>
+        <q1:IncludeHeader>false</q1:IncludeHeader>
+        <q1:Selector>Time,Point</q1:Selector>
+      </Expression>
+      <Expression xsi:type="q1:CsvWriter">
+        <q1:FileName>lh2-position.csv</q1:FileName>
+        <q1:Append>false</q1:Append>
+        <q1:Overwrite>true</q1:Overwrite>
+        <q1:Suffix>None</q1:Suffix>
+        <q1:IncludeHeader>false</q1:IncludeHeader>
+        <q1:Selector>Time,Point</q1:Selector>
+      </Expression>
+      <Expression xsi:type="q1:CsvWriter">
+        <q1:FileName>lh3-position.csv</q1:FileName>
+        <q1:Append>false</q1:Append>
+        <q1:Overwrite>true</q1:Overwrite>
+        <q1:Suffix>None</q1:Suffix>
+        <q1:IncludeHeader>false</q1:IncludeHeader>
+        <q1:Selector>Time,Point</q1:Selector>
+      </Expression>
+      <Expression xsi:type="q1:CsvWriter">
+        <q1:FileName>lh4-position.csv</q1:FileName>
+        <q1:Append>false</q1:Append>
+        <q1:Overwrite>true</q1:Overwrite>
+        <q1:Suffix>None</q1:Suffix>
+        <q1:IncludeHeader>false</q1:IncludeHeader>
+        <q1:Selector>Time,Point</q1:Selector>
+      </Expression>
+      <Expression xsi:type="ExternalizedProperty">
+        <MemberName>Q</MemberName>
+        <Name>Q</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:PlanarPositionsToOrientation">
+          <q3:Window>0</q3:Window>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge>
+        <From>0</From>
+        <To>1</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>1</From>
+        <To>8</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>2</From>
+        <To>3</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>3</From>
+        <To>9</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>4</From>
+        <To>5</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>5</From>
+        <To>10</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>6</From>
+        <To>7</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>7</From>
+        <To>11</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>8</From>
+        <To>23</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>9</From>
+        <To>24</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>10</From>
+        <To>25</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>11</From>
+        <To>26</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>12</From>
+        <To>28</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>13</From>
+        <To>14</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>14</From>
+        <To>16</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>15</From>
+        <To>16</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>16</From>
+        <To>17</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>17</From>
+        <To>18</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>18</From>
+        <To>19</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>18</From>
+        <To>20</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>18</From>
+        <To>21</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>23</From>
+        <To>12</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>24</From>
+        <To>12</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>25</From>
+        <To>12</To>
+        <Label>Source3</Label>
+      </Edge>
+      <Edge>
+        <From>26</From>
+        <To>12</To>
+        <Label>Source4</Label>
+      </Edge>
+      <Edge>
+        <From>27</From>
+        <To>8</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>27</From>
+        <To>9</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>27</From>
+        <To>10</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>27</From>
+        <To>11</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>28</From>
+        <To>22</To>
+        <Label>Source1</Label>
+      </Edge>
+    </Edges>
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.IO.CsvReader, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.OEPCIe.Prototyping.MakeLightHouseDataFrame, Bonsai.OEPCIE.Prototyping, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.OEPCIe.LightHouseFrameToPosition, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Timer, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.MatrixWriter, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.IO.CsvWriter, Bonsai.System, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.OEPCIe.PlanarPositionsToOrientation, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>

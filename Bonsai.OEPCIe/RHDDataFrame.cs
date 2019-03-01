@@ -1,7 +1,8 @@
-﻿namespace Bonsai.OEPCIe
-{
-    using System.Linq;
+﻿    using System.Linq;
     using OpenCV.Net;
+
+namespace Bonsai.OEPCIe
+{
 
     /// <summary>
     /// Provides Bonsai-friendly version of an RHDDataBlock

@@ -5,6 +5,10 @@ namespace Bonsai.OEPCIe
 {
     public class LightHouseDataFrame
     {
+        public LightHouseDataFrame()
+        {
+            // HACK for LightHouseFileTest
+        }
         public LightHouseDataFrame(oe.Frame frame, int device_index, int sample_clock_hz, int sys_clock_hz)
         {
             // NB: Data contents: [uint64_t remote_clock, uint16_t width, int16_t type]
@@ -17,7 +21,7 @@ namespace Bonsai.OEPCIe
             Time = Clock / (double)sample_clock_hz;
 
             // Data
-            PulseWidth = sample[4]; // TODO: once sample clock is sent from headstage / (double)sample_clock_hz;
+            PulseWidth = sample[4] / (double)sample_clock_hz;
             PulseType = (short)sample[5];
         }
 
@@ -27,10 +31,10 @@ namespace Bonsai.OEPCIe
 
         public ulong Clock { get; private set; }
 
-        public double Time { get; private set; }
+        public double Time { get; set; } // HACK for LightHouseFileTest
 
-        public ushort PulseWidth { get; private set; }
+        public double PulseWidth { get; set; }// HACK for LightHouseFileTest
 
-        public short PulseType { get; private set; }
+        public short PulseType { get; set; }// HACK for LightHouseFileTest
     }
 }
