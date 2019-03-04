@@ -117,7 +117,6 @@
     <Compile Include="LightHouseDevice.cs" />
     <Compile Include="PlanarPositionsToOrientation.cs" />
     <Compile Include="LightHouseFrameToPosition.cs" />
-    <Compile Include="LightHousePosition.cs" />
     <Compile Include="OEPCIe.cs" />
     <Compile Include="OEPCIeConfiguration.cs" />
     <Compile Include="OEPCIeConfigurationCollection.cs" />

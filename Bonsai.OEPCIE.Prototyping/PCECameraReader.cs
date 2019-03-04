@@ -6,10 +6,9 @@ using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Drawing.Design;
 
-namespace Bonsai.OEPCIE.Prototyping
+namespace Bonsai.OEPCIe.Prototyping
 {
     using oe;
-    using OEPCIe;
 
     [Description("Acquires images from PCE Camera prototypes (version x.x).")]
     public class PCECameraReader : Source<PCEImage>
@@ -40,10 +39,12 @@ namespace Bonsai.OEPCIE.Prototyping
             int rows = (int)oepcie.DAQ.DeviceMap[DeviceIndex.SelectedIndex].num_reads;
             int cols = (int)oepcie.DAQ.DeviceMap[DeviceIndex.SelectedIndex].read_size / 2 - 1; // ushorts, First element is row index
 
+            var image_data = new ushort[rows * cols];
+
             source = Observable.Create<PCEImage>(observer =>
             {
                 EventHandler<FrameReceivedEventArgs> inputReceived;
-                var image = new PCEImage(rows, cols, hardware_clock_hz); 
+                var image = new PCEImage(rows, cols, image_data, hardware_clock_hz); 
 
                 oepcie.Environment.Start();
 
@@ -51,14 +52,19 @@ namespace Bonsai.OEPCIE.Prototyping
                 {
                     var frame = e.Value;
 
-                    //If this frame contaisn data from the selected device_index
+                    // TODO: There is a bug here that needs to be fixed. It potentially applies to all devices.
+                    // 1. If we look at low level test programs, and send a fixed pattern of increasing row numbers, we see that all row numbers are read out in order
+                    // 2. If we send this same data here, we see that rows are regularly skipped. This seems to indicate that events are either being ingored (contain the wrong device) or they are being dropped.
+                
+                    //If this frame contains data from the selected device_index
                     if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
                     {
                         // Pull the sample
                         if (image.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                         {
                             observer.OnNext(image);
-                            image = new PCEImage(rows, cols, hardware_clock_hz);
+                            image_data = image.image_data;
+                            image = new PCEImage(rows, cols, image_data, hardware_clock_hz);
                         }
                     }
                 };

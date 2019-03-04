@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0-preview">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q3="clr-namespace:Bonsai.OEPCIe.Prototyping;assembly=Bonsai.OEPCIE.Prototyping" xmlns="https://horizongir.org/bonsai">
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:LoadImage">
+          <q1:FileName>4.1.06.tiff</q1:FileName>
+          <q1:Mode>Grayscale</q1:Mode>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MatrixReader">
+          <q2:Path>exposures.raw</q2:Path>
+          <q2:FileName>exposures.raw</q2:FileName>
+          <q2:Offset>0</q2:Offset>
+          <q2:Frequency>0</q2:Frequency>
+          <q2:ChannelCount>256</q2:ChannelCount>
+          <q2:BufferLength>256</q2:BufferLength>
+          <q2:Depth>F64</q2:Depth>
+          <q2:Layout>RowMajor</q2:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Repeat" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="CombineLatest" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:ConvertToMat" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q3:PCECameraCalibrate">
+          <q3:OffsetPath>offset.raw</q3:OffsetPath>
+          <q3:SlopePath>slope.raw</q3:SlopePath>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:ConvertToImage" />
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge>
+        <From>0</From>
+        <To>4</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>1</From>
+        <To>2</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>2</From>
+        <To>3</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>3</From>
+        <To>5</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>4</From>
+        <To>3</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>5</From>
+        <To>6</To>
+        <Label>Source1</Label>
+      </Edge>
+    </Edges>
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.Vision.LoadImage, Bonsai.Vision, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.MatrixReader, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Repeat, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.ConvertToMat, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.OEPCIe.Prototyping.PCECameraCalibrate, Bonsai.OEPCIE.Prototyping, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Vision.ConvertToImage, Bonsai.Vision, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>

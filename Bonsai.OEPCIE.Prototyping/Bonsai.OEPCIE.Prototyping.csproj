@@ -84,9 +84,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LightHouseFileTest.cs" />
     <Compile Include="PCECameraWriter.cs" />
     <Compile Include="PCECameraReader.cs" />
     <Compile Include="PCEImage.cs" />
+    <Compile Include="PCECameraCalibrate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

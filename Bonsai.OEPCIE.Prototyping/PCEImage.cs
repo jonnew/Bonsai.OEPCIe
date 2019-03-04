@@ -5,21 +5,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bonsai.OEPCIE.Prototyping
+namespace Bonsai.OEPCIe.Prototyping
 {
     public class PCEImage
     {
         double fs;
         bool alignment_needed;
-        ushort[] image_data;
+        internal ushort[] image_data;
+        int s_raw = 0;
+        ushort last_row = 0;
+        const ushort NO_UPDATE = 65535; // 2^16 - 1
 
         //int col_start = 37; // The first 38 columns of the frame are used for firmware stuff
 
-        public PCEImage(int rows, int cols, double sample_rate_hz)
+        public PCEImage(int rows, int cols, ushort[] last_image_data, double sample_rate_hz)
         {
             Rows = rows;
             Cols = cols;
-            image_data = new ushort[rows * cols];
+
+            // Last image is used as starting point
+            if (last_image_data.Length != rows * cols)
+                throw new IndexOutOfRangeException();
+            image_data = last_image_data; // new ushort[rows * cols];
+
             ImageData = Mat.CreateMatHeader(image_data, rows, cols, Depth.U16, 1);
             Image = ImageData.GetImage();
             fs = sample_rate_hz;
@@ -33,13 +41,10 @@ namespace Bonsai.OEPCIE.Prototyping
 
             // Which row is this data from?
             // Data packed big endian
-            var row = data[0]; // - 16384; // 16384 used internally by firmware
-
-            if (row < 0)
-                return false;
-
+            var row = data[0];
+            
             // Sanity check
-            if (row >= Rows)
+            if (row < 0 || row >= Rows)
                 throw new IndexOutOfRangeException();
 
             // We need to start at row 0
@@ -51,10 +56,57 @@ namespace Bonsai.OEPCIE.Prototyping
                 alignment_needed = false;
             }
 
+            // Loop through pixels looking for which to update
+            for (int i = 0; i < Cols;  i++)
+                if (data[i + 1] != NO_UPDATE)
+                    image_data[row * Cols + i] = data[i + 1];
+
             // Copy data into current row
-            Array.Copy(data, 1, image_data, row * Cols, Cols); //HDR_COLS
+            //Array.Copy(data, 1, image_data, row * Cols, Cols);
+
+            // TODO: remove.....\
+            //if (row != last_row + 1)
+            //    System.Console.WriteLine("zero row!");
+
+            //last_row = row;
+
+            //int sr = 0;
+            //for (int i = 1; i < data.Length; i++)
+            //    sr += data[i];
+
+            //if (sr == 0)
+            //    System.Console.WriteLine("zero row!");
+
+            //s_raw += sr;
+
+            //var row_data = image_data.Skip(row * Cols).Take(Cols).ToArray();
+            //if (Enumerable.SequenceEqual(row_data, Enumerable.Repeat<ushort>(0, row_data.Length).ToArray()))
+            //    System.Console.WriteLine("zero row: { }!", row); // throw new IndexOutOfRangeException();
+
+            //int s = 0;
+            //for (int i = 0; i < row_data.Length; i++)
+            //    s += row_data[i];
+
+            //if (s == 0)
+            //    System.Console.WriteLine("zero row: { }!", row);
 
             // If we are at last row and started at first
+            //var done = (row == Rows - 1 && !alignment_needed);
+
+            //if (done) {
+
+            //    int s = 0;
+            //    for (int i = 0; i < image_data.Length; i++)
+            //        s += image_data[i];
+
+
+
+            //    if (s != 256)
+            //        System.Console.WriteLine("zero row!");
+
+            //}
+            //......
+
             return row == Rows - 1 && !alignment_needed;
         }
 
