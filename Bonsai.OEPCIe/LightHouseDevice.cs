@@ -75,8 +75,8 @@ namespace Bonsai.OEPCIe
         [Description("The size of data blocks, in samples, that are propogated in the observable sequence.")]
         public int BlockSize { get; set; } = 5;
 
-        [Range(0, (int)1e9)]
-        [Description("The remote clock frequency in Hz.")]
-        public int SampleClockHz { get; set; } = (int)42e6;
+        //[Range(0, (int)1e9)]
+        //[Description("The remote clock frequency in Hz.")]
+        //public int SampleClockHz { get; set; } = (int)42e6;
     }
 }

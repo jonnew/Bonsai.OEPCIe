@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0-preview">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.OEPCIe.Prototyping;assembly=Bonsai.OEPCIE.Prototyping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q3="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns="https://bonsai-rx.org/2018/workflow">
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:MatrixMap">
+          <q1:MapDimension>0</q1:MapDimension>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MatrixReader">
+          <q2:Path>to-map.raw</q2:Path>
+          <q2:FileName>to-map.raw</q2:FileName>
+          <q2:Offset>0</q2:Offset>
+          <q2:Frequency>0</q2:Frequency>
+          <q2:ChannelCount>3</q2:ChannelCount>
+          <q2:BufferLength>4</q2:BufferLength>
+          <q2:Depth>F32</q2:Depth>
+          <q2:Layout>RowMajor</q2:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Zip" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MatrixReader">
+          <q2:Path>map.raw</q2:Path>
+          <q2:FileName>map.raw</q2:FileName>
+          <q2:Offset>0</q2:Offset>
+          <q2:Frequency>0</q2:Frequency>
+          <q2:ChannelCount>3</q2:ChannelCount>
+          <q2:BufferLength>1</q2:BufferLength>
+          <q2:Depth>S32</q2:Depth>
+          <q2:Layout>RowMajor</q2:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="q3:MouseButtonDown">
+            <q3:Filter>None</q3:Filter>
+          </Combinator>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:MatrixWriter">
+          <q2:Path>mapped.raw</q2:Path>
+          <q2:Suffix>None</q2:Suffix>
+          <q2:Overwrite>true</q2:Overwrite>
+          <q2:Layout>RowMajor</q2:Layout>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="5" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="2" To="0" Label="Source1" />
+      <Edge From="3" To="2" Label="Source2" />
+      <Edge From="4" To="1" Label="Source1" />
+      <Edge From="4" To="3" Label="Source1" />
+    </Edges>
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.OEPCIe.Prototyping.MatrixMap, Bonsai.OEPCIE.Prototyping, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.MatrixReader, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Windows.Input.MouseButtonDown, Bonsai.Windows.Input, Version=2.1.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.MatrixWriter, Bonsai.Dsp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>

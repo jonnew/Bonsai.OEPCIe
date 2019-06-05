@@ -40,7 +40,13 @@ namespace Bonsai.OEPCIe
                     case 1:
                         return "SERDES hardware-level parity error. Data corrupt.";
                     case 2:
-                        return "Serialized data checksum failed. Data corrupt.";
+                        return "Serialized data CRC failed. Data corrupt.";
+                    case 3:
+                        return "Too many remote devices for host to support.";
+                    case 4:
+                        return "Remote initialization error.";
+                    case 5:
+                        return "Malformed packet during SERDES demultiplexing.";
                     default:
                         return "Unknown code.";
                 }

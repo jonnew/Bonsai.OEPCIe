@@ -21,7 +21,7 @@ namespace Bonsai.OEPCIe.Prototyping
 
                 var result = new LightHouseDataFrame();
                 result.Time = (double)input.Item1 / 50e6;
-                result.PulseWidth = (double)input.Item2 / 50e6;
+                result.PulseWidth = (double)input.Item2 /50e6;
                 result.PulseType = (short)input.Item3;
 
                 return result;

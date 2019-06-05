@@ -21,8 +21,8 @@ namespace Bonsai.OEPCIe
         }
 
         public OEPCIe(string config_path,
-                       string read_path,
-                       string signal_path)
+                      string read_path,
+                      string signal_path)
         {
             DAQ = new oe.Context(config_path, read_path, signal_path);
         }

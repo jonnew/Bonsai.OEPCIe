@@ -16,9 +16,12 @@ namespace Bonsai.OEPCIe
             Time = Clock / (double)sample_clock_hz;
 
             // Convert data packet (output format is hard coded right now)
-            Quaternion = GetQuat(sample, 4);
-            LinearAcceleration = GetAcceleration(sample, 8);
-            GravityVector  = GetAcceleration(sample, 11);
+            Euler = GetEuler(sample, 4);
+            Quaternion = GetQuat(sample, 7);
+            LinearAcceleration = GetAcceleration(sample, 11);
+            GravityVector = GetAcceleration(sample, 14);
+            Temperature = (byte)(sample[17] & 0x00FF); // 1°C = 1 LSB
+            Calibration = (byte)((sample[17] & 0xFF00) >> 8);
         }
 
         public ulong FrameClock { get; private set; }
@@ -29,11 +32,31 @@ namespace Bonsai.OEPCIe
 
         public double Time { get; private set; }
 
+        public byte Temperature { get; private set; }
+
+        public byte Calibration { get; private set; }
+
         public Mat Quaternion { get; private set; }
 
         public Mat LinearAcceleration { get; private set; }
 
         public Mat GravityVector { get; private set; }
+
+        public Mat Euler { get; private set; }
+
+        
+
+        Mat GetEuler(ushort[] sample, int begin)
+        {
+            // 1 degree = 16 LSB
+            const double scale = 0.0625;
+            var vec = new double[3];
+
+            for (int i = 0; i < vec.Count(); i++)
+                vec[i] = scale * (short)sample[i + begin];
+
+            return Mat.FromArray(vec, vec.Length, 1, Depth.F64, 1);
+        }
 
         Mat GetAcceleration(ushort[] sample, int begin)
         {

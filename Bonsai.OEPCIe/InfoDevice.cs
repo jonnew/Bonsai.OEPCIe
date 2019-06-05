@@ -17,9 +17,12 @@ namespace Bonsai.OEPCIe
         // TODO: set these
         enum Register
         {
-            NULLPARM = 0, // No command
-            WATCHDOGEN = 1, // Enable frame watchdog (0 = off; 1 = 0n)
-            WATCHDOGDUR = 2, // Watchdog timer threshold (sysclock ticks, default = SYSCLOCK_HZ, 1 second)
+            EWATCHDOG = 0,   // Frame not sent withing watchdog threshold
+            ESERDESPARITY = 1,   // SERDES parity error detected
+            ESERDESCHKSUM = 2,   // SERDES packet CRC error detected
+            ETOOMANYREMOTE = 3,   // Too many remote devices for host to support
+            EREMOTEINIT = 4,   // Remote initialization error
+            EBADPACKET = 5,   // Malformed packet during SERDES demultiplexing
         }
 
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
