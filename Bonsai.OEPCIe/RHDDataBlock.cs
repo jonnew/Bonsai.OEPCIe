@@ -37,8 +37,6 @@ namespace Bonsai.OEPCIe
             if (index >= SamplesPerBlock)
                 throw new IndexOutOfRangeException();
 
-            clock[index] = frame.Clock();
-
             // [uint64_t local_clock, uint16_t ephys1, uint16_t ephys2, ... , uint16_t aux1, uint16_t aux2, ...]
             var data = frame.Data<ushort>(device_index);
 

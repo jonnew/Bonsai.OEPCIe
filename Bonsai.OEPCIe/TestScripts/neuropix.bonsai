@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0-preview">
+  <Workflow xmlns:q1="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns="https://bonsai-rx.org/2018/workflow">
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:Neuropixels6B">
+          <q1:DeviceIndex>
+            <q1:SelectedIndex>2</q1:SelectedIndex>
+            <q1:Indices>
+              <q1:int>2</q1:int>
+            </q1:Indices>
+          </q1:DeviceIndex>
+          <q1:BlockSize>100</q1:BlockSize>
+          <q1:TestMode>false</q1:TestMode>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>FrameCounter</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>FrameType</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>SpikeData</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:ConvertToImage" />
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>LFPData</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:ConvertToImage" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:BNO055Device">
+          <q1:DeviceIndex>
+            <q1:SelectedIndex>3</q1:SelectedIndex>
+            <q1:Indices>
+              <q1:int>3</q1:int>
+            </q1:Indices>
+          </q1:DeviceIndex>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Quaternion</Selector>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="0" To="2" Label="Source1" />
+      <Edge From="0" To="3" Label="Source1" />
+      <Edge From="0" To="5" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="7" To="8" Label="Source1" />
+    </Edges>
+  </Workflow>
+  <ExtensionTypes>
+    <Type>Bonsai.OEPCIe.BNO055Device, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.OEPCIe.Neuropixels6B, Bonsai.OEPCIe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Vision.ConvertToImage, Bonsai.Vision, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null</Type>
+  </ExtensionTypes>
+</WorkflowBuilder>
