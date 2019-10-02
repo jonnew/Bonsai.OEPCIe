@@ -180,9 +180,6 @@
       <Name>clroepcie</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="License-LGPL.txt" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <StartAction>Program</StartAction>

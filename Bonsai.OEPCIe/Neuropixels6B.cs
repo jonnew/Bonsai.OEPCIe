@@ -32,6 +32,7 @@ namespace Bonsai.OEPCIe
             ).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no devices to use
+            // TODO: this aliases into some XML error
             if (devices.Count == 0)
                 throw new oe.OEException((int)oe.lib.Error.DEVIDX);
 

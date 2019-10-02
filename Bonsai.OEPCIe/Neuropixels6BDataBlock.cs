@@ -13,6 +13,7 @@ namespace Bonsai.OEPCIe
     {
         private int HyperFramesPerBlock;
         public const int NumChannels = 384;
+        private const int data_offset = 5;
 
         private int block_idx = 0;
 
@@ -26,13 +27,24 @@ namespace Bonsai.OEPCIe
         private int super_cnt = 0;
         private int hyper_cnt = 0;
 
-        public static readonly int[] chan_map = {0 , 7 , 14, 21, 28,
-                                                 1 , 8 , 15, 22, 29,
-                                                 2 , 9 , 16, 23, 30,
-                                                 3 , 10, 17, 24, 31,
-                                                 4 , 11, 18, 25, 32,
-                                                 5 , 12, 19, 26, 33,
-                                                 6 , 13 };
+        // TODO: Would rather used the top map, but its wrong because of 
+        // to vs downto somewhere in firmware
+        //public static readonly int[] chan_map = {0 , 7 , 14, 21, 28,
+        //                                         1 , 8 , 15, 22, 29,
+        //                                         2 , 9 , 16, 23, 30,
+        //                                         3 , 10, 17, 24, 31,
+        //                                         4 , 11, 18, 25, 32,
+        //                                         5 , 12, 19, 26, 33,
+        //                                         6 , 13 };
+
+        public static readonly int[] chan_map = {6, 13, 20, 27, 34,
+                                                 5, 12, 19, 26, 33,
+                                                 4, 11, 18, 25, 32,
+                                                 3, 10, 17, 24, 31,
+                                                 2,  9, 16, 23, 30,
+                                                 1,  8, 15, 22, 29,
+                                                 0,  7 };
+
         ulong[] lfpClock;
         ulong[] spikeClock;
         uint[] counterData;
@@ -59,7 +71,7 @@ namespace Bonsai.OEPCIe
             if (block_idx >= HyperFramesPerBlock)
                 throw new IndexOutOfRangeException();
 
-            // [uint64_t local_clock, uint32_t frame_type, ephys1, uint16_t ephys2, ... , uint16_t aux1, uint16_t aux2, ...]
+            // [uint64_t local_clock, uint16_t frame_type, ephys1, uint16_t ephys2, ... , uint16_t aux1, uint16_t aux2, ...]
             var data = frame.Data<ushort>(device_index);
 
             // TODO: This should be done automatically by firmware, seems like buffers are not getting cleared during reset
@@ -68,32 +80,33 @@ namespace Bonsai.OEPCIe
 
             // Frame type and counter
             frameTypeData[total_frame_cnt] = data[4];
-            counterData[total_frame_cnt] = ((uint)data[34] << 16) | ((uint)data[27] << 0);
+            //counterData[total_frame_cnt] = ((uint)data[27] << 16) | ((uint)data[34] << 0);
+            counterData[total_frame_cnt] = ((uint)data[21 + data_offset] << 16) | ((uint)data[28 + data_offset] << 0);
 
             if (frame_cnt == 0) // This one is LFP data
             {
-                if (super_cnt == 0)
+                if (super_cnt == 0) // Use the first superframe in hyperframe as time of this spike-data round robin
                 {
                     lfpClock[hyper_cnt] = ((ulong)data[0] << 48) | ((ulong)data[1] << 32) | ((ulong)data[2] << 16) | ((ulong)data[3] << 0);
                 }
 
                 for (int chan = 0; chan < 32; chan++)
                 {
-                    lfpData[chan + super_cnt * 32, hyper_cnt] = data[chan_map[chan] + 6]; // Start at index 6
+                    lfpData[chan + super_cnt * 32, hyper_cnt] = data[chan_map[chan] + data_offset]; // Start at index 6
                 }
 
             } else { // Spike data
 
-                if (frame_cnt == 0)
+                if (frame_cnt == 1) // Use the first frame in superframe as time of this spike-data round robin
                 {
                     spikeClock[super_cnt] = ((ulong)data[0] << 48) | ((ulong)data[1] << 32) | ((ulong)data[2] << 16) | ((ulong)data[3] << 0);
                 }
 
-                spikeClock[block_idx] = ((ulong)data[0] << 48) | ((ulong)data[1] << 32) | ((ulong)data[2] << 16) | ((ulong)data[3] << 0);
+                //spikeClock[block_idx] = ((ulong)data[0] << 48) | ((ulong)data[1] << 32) | ((ulong)data[2] << 16) | ((ulong)data[3] << 0);
 
                 for (int chan = 0; chan < 32; chan++)
                 {
-                    spikeData[chan + spike_frame_cnt * 32, total_super_cnt] = data[chan_map[chan] + 6]; // Start at index 6
+                    spikeData[chan + spike_frame_cnt * 32, total_super_cnt] = data[chan_map[chan] + data_offset]; // Start at index 6
                 }
 
                 spike_frame_cnt++;
