@@ -1,0 +1,1966 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:q1="clr-namespace:Bonsai.OEPCIe;assembly=Bonsai.OEPCIe"
+                 xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
+                 xmlns:scr="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting"
+                 xmlns:q2="clr-namespace:Bonsai.OEPCIe.Prototyping;assembly=Bonsai.OEPCIE.Prototyping"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="GroupWorkflow">
+        <Name>headstage-neuropix</Name>
+        <Description>Neuropixels</Description>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:Neuropixels6B">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>14</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>14</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+                <q1:BlockSize>100</q1:BlockSize>
+                <q1:TestMode>false</q1:TestMode>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>FrameCounter</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>FrameType</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>SpikeData</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>spike_data.raw</dsp:Path>
+                  <dsp:Suffix>None</dsp:Suffix>
+                  <dsp:Overwrite>true</dsp:Overwrite>
+                  <dsp:Layout>ColumnMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="dsp:ConvertScale">
+                <dsp:Depth>F32</dsp:Depth>
+                <dsp:Scale>1</dsp:Scale>
+                <dsp:Shift>0</dsp:Shift>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="dsp:Rescale">
+                <dsp:Min>0</dsp:Min>
+                <dsp:Max>1024</dsp:Max>
+                <dsp:RangeMin>0</dsp:RangeMin>
+                <dsp:RangeMax>1</dsp:RangeMax>
+                <dsp:RescaleType>Clamp</dsp:RescaleType>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="cv:ConvertToImage" />
+            </Expression>
+            <Expression xsi:type="GroupWorkflow">
+              <Name>GPUPlot8</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:ElementIndex" />
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>0</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data00</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>1</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data01</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>2</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data02</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>3</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data03</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>4</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data04</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>5</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data05</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>6</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data06</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Index</Selector>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" DisplayName="Index" />
+                        </Expression>
+                        <Expression xsi:type="ExternalizedMapping">
+                          <Property Name="Value" />
+                        </Expression>
+                        <Expression xsi:type="Mod">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="IntProperty">
+                            <Value>7</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="4" Label="Source1" />
+                        <Edge From="2" To="5" Label="Source2" />
+                        <Edge From="3" To="4" Label="Source2" />
+                        <Edge From="4" To="5" Label="Source1" />
+                        <Edge From="5" To="6" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Value</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateTexture">
+                      <gl:TextureName>data07</gl:TextureName>
+                      <gl:TextureTarget>Texture2D</gl:TextureTarget>
+                      <gl:InternalFormat>R32f</gl:InternalFormat>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateFrame" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>0</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data00</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>1</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data01</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>2</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data02</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>3</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data03</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>4</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data04</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>5</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data05</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>6</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data06</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>7</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="gl:UpdateUniform">
+                      <gl:UniformName>channel</gl:UniformName>
+                      <gl:ShaderName>data07</gl:ShaderName>
+                    </Combinator>
+                  </Expression>
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="1" To="5" Label="Source1" />
+                  <Edge From="1" To="8" Label="Source1" />
+                  <Edge From="1" To="11" Label="Source1" />
+                  <Edge From="1" To="14" Label="Source1" />
+                  <Edge From="1" To="17" Label="Source1" />
+                  <Edge From="1" To="20" Label="Source1" />
+                  <Edge From="1" To="23" Label="Source1" />
+                  <Edge From="2" To="3" Label="Source1" />
+                  <Edge From="3" To="4" Label="Source1" />
+                  <Edge From="5" To="6" Label="Source1" />
+                  <Edge From="6" To="7" Label="Source1" />
+                  <Edge From="8" To="9" Label="Source1" />
+                  <Edge From="9" To="10" Label="Source1" />
+                  <Edge From="11" To="12" Label="Source1" />
+                  <Edge From="12" To="13" Label="Source1" />
+                  <Edge From="14" To="15" Label="Source1" />
+                  <Edge From="15" To="16" Label="Source1" />
+                  <Edge From="17" To="18" Label="Source1" />
+                  <Edge From="18" To="19" Label="Source1" />
+                  <Edge From="20" To="21" Label="Source1" />
+                  <Edge From="21" To="22" Label="Source1" />
+                  <Edge From="23" To="24" Label="Source1" />
+                  <Edge From="24" To="25" Label="Source1" />
+                  <Edge From="26" To="27" Label="Source1" />
+                  <Edge From="26" To="29" Label="Source1" />
+                  <Edge From="26" To="31" Label="Source1" />
+                  <Edge From="26" To="33" Label="Source1" />
+                  <Edge From="26" To="35" Label="Source1" />
+                  <Edge From="26" To="37" Label="Source1" />
+                  <Edge From="26" To="39" Label="Source1" />
+                  <Edge From="26" To="41" Label="Source1" />
+                  <Edge From="27" To="28" Label="Source1" />
+                  <Edge From="29" To="30" Label="Source1" />
+                  <Edge From="31" To="32" Label="Source1" />
+                  <Edge From="33" To="34" Label="Source1" />
+                  <Edge From="35" To="36" Label="Source1" />
+                  <Edge From="37" To="38" Label="Source1" />
+                  <Edge From="39" To="40" Label="Source1" />
+                  <Edge From="41" To="42" Label="Source1" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>LFPData</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>lfp_data.raw</dsp:Path>
+                  <dsp:Suffix>None</dsp:Suffix>
+                  <dsp:Overwrite>true</dsp:Overwrite>
+                  <dsp:Layout>ColumnMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="cv:ConvertToImage" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:InfoDevice">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>1</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>1</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Clock</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Code</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>CodeStr</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>log_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value.Item1,Value.Item2,Value.Item3</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="rx:Timer">
+                  <rx:DueTime>PT0S</rx:DueTime>
+                  <rx:Period>PT0.1S</rx:Period>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timer">
+                <rx:DueTime>PT0S</rx:DueTime>
+                <rx:Period>PT0.1S</rx:Period>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:BNO055Device">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>15</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>5</q1:int>
+                    <q1:int>15</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Clock</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>quaterion-time_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>LinearAcceleration</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>linear-accel_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>GravityVector</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>gravity-vector_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Temperature</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>temperature_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Euler</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>euler_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="scr:PythonTransform">
+                <scr:Name>Heading</scr:Name>
+                <scr:Script>import clr
+clr.AddReference("OpenCV.Net")
+from OpenCV.Net import *
+from math import atan2
+@returns(float)
+def process(value):
+
+  val = value[0].Val0 # pitch
+  #val = value[1].Val0 # roll
+  #val = value[2].Val0 # heading
+
+  return 0.01745330555 * (val - 180)</scr:Script>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>heading_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="rx:Sample" />
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="rx:Skip">
+                  <rx:Count>1</rx:Count>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="rx:Zip" />
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="scr:PythonTransform">
+                <scr:Script>from math import pi
+
+@returns(str)
+def process(value):
+  
+  
+  last = value.Item2
+
+  curr = value.Item1
+  a1 = curr + 2 * pi
+  a2 = curr - 2 * pi
+  pos = [curr, a1, a2]
+
+  delta = [abs(x - last) for x in pos]
+
+  p = pos[delta.index(min(delta))]
+
+  turn = (p - last) / (2 * pi)
+
+  return "{turn : %s}" % turn</scr:Script>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="io:SerialStringWrite">
+                  <io:PortName>COM3</io:PortName>
+                  <io:NewLine>\r\n</io:NewLine>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Quaternion</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="dsp:MatrixWriter">
+                <dsp:Path>quaterion_.raw</dsp:Path>
+                <dsp:Suffix>Timestamp</dsp:Suffix>
+                <dsp:Overwrite>false</dsp:Overwrite>
+                <dsp:Layout>RowMajor</dsp:Layout>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Name>Heading</scr:Name>
+              <scr:Script>import clr
+clr.AddReference("OpenCV.Net")
+from OpenCV.Net import *
+from math import atan2
+@returns(float)
+def process(value):
+
+  q0 = value[0].Val0;
+  q1 = value[1].Val0;
+  q2 = value[2].Val0;
+  q3 = value[3].Val0;
+
+  return atan2((2 * (q0 * q3 + q1 * q2)), (1 - 2 * (q2**2 + q3**2)))</scr:Script>
+            </Expression>
+            <Expression xsi:type="io:CsvWriter">
+              <io:FileName>heading_.csv</io:FileName>
+              <io:Append>false</io:Append>
+              <io:Overwrite>false</io:Overwrite>
+              <io:Suffix>Timestamp</io:Suffix>
+              <io:IncludeHeader>false</io:IncludeHeader>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Sample" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Skip">
+                <rx:Count>1</rx:Count>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>from math import pi
+
+@returns(str)
+def process(value):
+  
+  
+  last = value.Item2
+
+  curr = value.Item1
+  a1 = curr + 2 * pi
+  a2 = curr - 2 * pi
+  pos = [curr, a1, a2]
+
+  delta = [abs(x - last) for x in pos]
+
+  p = pos[delta.index(min(delta))]
+
+  turn = (p - last) / (2 * pi)
+
+  return "{turn : %s}" % turn</scr:Script>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="io:SerialStringWrite">
+                  <io:PortName>COM3</io:PortName>
+                  <io:NewLine>\r\n</io:NewLine>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Calibration</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>bno-calib_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value</io:Selector>
+              </Builder>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="0" To="2" Label="Source1" />
+            <Edge From="0" To="3" Label="Source1" />
+            <Edge From="0" To="9" Label="Source1" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
+            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
+            <Edge From="12" To="14" Label="Source1" />
+            <Edge From="12" To="15" Label="Source1" />
+            <Edge From="13" To="16" Label="Source1" />
+            <Edge From="14" To="16" Label="Source2" />
+            <Edge From="15" To="16" Label="Source3" />
+            <Edge From="16" To="17" Label="Source1" />
+            <Edge From="17" To="18" Label="Source1" />
+            <Edge From="19" To="36" Label="Source2" />
+            <Edge From="20" To="45" Label="Source2" />
+            <Edge From="21" To="22" Label="Source1" />
+            <Edge From="21" To="25" Label="Source1" />
+            <Edge From="21" To="27" Label="Source1" />
+            <Edge From="21" To="29" Label="Source1" />
+            <Edge From="21" To="32" Label="Source1" />
+            <Edge From="21" To="41" Label="Source1" />
+            <Edge From="21" To="50" Label="Source1" />
+            <Edge From="22" To="23" Label="Source1" />
+            <Edge From="23" To="24" Label="Source1" />
+            <Edge From="25" To="26" Label="Source1" />
+            <Edge From="27" To="28" Label="Source1" />
+            <Edge From="29" To="30" Label="Source1" />
+            <Edge From="30" To="31" Label="Source1" />
+            <Edge From="32" To="33" Label="Source1" />
+            <Edge From="32" To="34" Label="Source1" />
+            <Edge From="34" To="35" Label="Source1" />
+            <Edge From="35" To="36" Label="Source1" />
+            <Edge From="36" To="38" Label="Source1" />
+            <Edge From="36" To="37" Label="Source1" />
+            <Edge From="37" To="38" Label="Source2" />
+            <Edge From="38" To="39" Label="Source1" />
+            <Edge From="39" To="40" Label="Source1" />
+            <Edge From="41" To="42" Label="Source1" />
+            <Edge From="42" To="43" Label="Source1" />
+            <Edge From="43" To="44" Label="Source1" />
+            <Edge From="44" To="45" Label="Source1" />
+            <Edge From="45" To="47" Label="Source1" />
+            <Edge From="45" To="46" Label="Source1" />
+            <Edge From="46" To="47" Label="Source2" />
+            <Edge From="47" To="48" Label="Source1" />
+            <Edge From="48" To="49" Label="Source1" />
+            <Edge From="50" To="51" Label="Source1" />
+            <Edge From="51" To="52" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="GroupWorkflow">
+        <Name>headstage-64</Name>
+        <Description>headstage-64</Description>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="StringProperty">
+                <Value>{speed : 200,  accel: 50,  enable: true}</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="io:SerialStringWrite">
+                <io:PortName>COM3</io:PortName>
+                <io:NewLine>\r\n</io:NewLine>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:InfoDevice">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>1</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>1</q1:int>
+                    <q1:int>2</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Clock</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Code</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>CodeStr</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>log_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value.Item1,Value.Item2,Value.Item3</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="q1:DigitalInput32Device">
+                  <q1:DeviceIndex>
+                    <q1:SelectedIndex>0</q1:SelectedIndex>
+                    <q1:Indices>
+                      <q1:int>0</q1:int>
+                    </q1:Indices>
+                  </q1:DeviceIndex>
+                  <q1:BlockSize>1</q1:BlockSize>
+                  <q1:RemoteClockHz>42000000</q1:RemoteClockHz>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="MemberSelector">
+                <Selector>Clock</Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>digital-port-clock_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="MemberSelector">
+                <Selector>PortState</Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>digital-port_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="rx:Timestamp" />
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>digital-port-time_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:RHDDevice">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>4</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>4</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+                <q1:BlockSize>250</q1:BlockSize>
+                <q1:SampleRate>SampleRate30000Hz</q1:SampleRate>
+                <q1:FastSettle>false</q1:FastSettle>
+                <q1:LowerBandwidth>0.1</q1:LowerBandwidth>
+                <q1:UpperBandwidth>7500</q1:UpperBandwidth>
+                <q1:DspCutoffFrequency>1</q1:DspCutoffFrequency>
+                <q1:DspEnabled>true</q1:DspEnabled>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>EphysData</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="dsp:MatrixReader">
+                <dsp:Path>channel-map.raw</dsp:Path>
+                <dsp:FileName>channel-map.raw</dsp:FileName>
+                <dsp:Offset>0</dsp:Offset>
+                <dsp:SampleRate>0</dsp:SampleRate>
+                <dsp:ChannelCount>64</dsp:ChannelCount>
+                <dsp:BufferLength>1</dsp:BufferLength>
+                <dsp:Depth>S32</dsp:Depth>
+                <dsp:Layout>RowMajor</dsp:Layout>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q2:MatrixMap">
+                <q2:MapDimension>0</q2:MapDimension>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>intan_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>ColumnMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Clock</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>intan-time_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Take">
+                <rx:Count>1</rx:Count>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>intan-first-time_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timer">
+                <rx:DueTime>PT0S</rx:DueTime>
+                <rx:Period>PT0.1S</rx:Period>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:BNO055Device">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>5</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>5</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Quaternion</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>quaterion_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Name>Heading</scr:Name>
+              <scr:Script>import clr
+clr.AddReference("OpenCV.Net")
+from OpenCV.Net import *
+from math import atan2
+@returns(float)
+def process(value):
+
+  q0 = value[0].Val0;
+  q1 = value[1].Val0;
+  q2 = value[2].Val0;
+  q3 = value[3].Val0;
+
+  return atan2((2 * (q0 * q3 + q1 * q2)), (1 - 2 * (q2**2 + q3**2)))</scr:Script>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>heading_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Sample" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Skip">
+                <rx:Count>1</rx:Count>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="scr:PythonTransform">
+              <scr:Script>from math import pi
+
+@returns(str)
+def process(value):
+  
+  
+  last = value.Item2
+
+  curr = value.Item1
+  a1 = curr + 2 * pi
+  a2 = curr - 2 * pi
+  pos = [curr, a1, a2]
+
+  delta = [abs(x - last) for x in pos]
+
+  p = pos[delta.index(min(delta))]
+
+  turn = (p - last) / (2 * pi)
+
+  return "{turn : %s}" % turn</scr:Script>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="io:SerialStringWrite">
+                <io:PortName>COM3</io:PortName>
+                <io:NewLine>\r\n</io:NewLine>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Clock</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>quaterion-time_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>LinearAcceleration</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>linear-accel_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>GravityVector</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>gravity-vector_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Temperature</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>temperature_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Euler</Selector>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="dsp:MatrixWriter">
+                  <dsp:Path>euler_.raw</dsp:Path>
+                  <dsp:Suffix>Timestamp</dsp:Suffix>
+                  <dsp:Overwrite>false</dsp:Overwrite>
+                  <dsp:Layout>RowMajor</dsp:Layout>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Calibration</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>bno-calib_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value</io:Selector>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:LightHouseDevice">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>6</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>6</q1:int>
+                    <q1:int>7</q1:int>
+                    <q1:int>8</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+                <q1:BlockSize>5</q1:BlockSize>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="GroupWorkflow">
+              <Name>Lighthouse Process</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q1:LightHouseFrameToPosition">
+                      <q1:P>
+                        <q1:X>0.124</q1:X>
+                        <q1:Y>0</q1:Y>
+                        <q1:Z>0</q1:Z>
+                      </q1:P>
+                      <q1:Q>
+                        <q1:X>-0.124</q1:X>
+                        <q1:Y>0</q1:Y>
+                        <q1:Z>0</q1:Z>
+                      </q1:Q>
+                      <q1:SweepFrequency>60</q1:SweepFrequency>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Matrix</Selector>
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="Path" DisplayName="PositionPath" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="dsp:MatrixWriter">
+                      <dsp:Path>lh1-3d.raw</dsp:Path>
+                      <dsp:Suffix>Timestamp</dsp:Suffix>
+                      <dsp:Overwrite>false</dsp:Overwrite>
+                      <dsp:Layout>RowMajor</dsp:Layout>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Clock</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Sample" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="PositionTimePath" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>lh1-time_.csv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>false</io:Overwrite>
+                    <io:Suffix>Timestamp</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:Selector>Item1.Timestamp,Item2</io:Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Clock</Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>PulseWidth</Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>PulseType</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="PulsePath" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>lh1-pulse_.csv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>false</io:Overwrite>
+                    <io:Suffix>Timestamp</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:Selector>Timestamp,Value.Item1,Value.Item2,Value.Item3</io:Selector>
+                  </Expression>
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="0" To="7" Label="Source1" />
+                  <Edge From="0" To="12" Label="Source1" />
+                  <Edge From="0" To="13" Label="Source1" />
+                  <Edge From="0" To="14" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="1" To="6" Label="Source1" />
+                  <Edge From="2" To="4" Label="Source1" />
+                  <Edge From="2" To="5" Label="Source1" />
+                  <Edge From="2" To="8" Label="Source2" />
+                  <Edge From="3" To="4" Label="Source2" />
+                  <Edge From="5" To="9" Label="Source1" />
+                  <Edge From="7" To="8" Label="Source1" />
+                  <Edge From="8" To="9" Label="Source2" />
+                  <Edge From="9" To="11" Label="Source1" />
+                  <Edge From="10" To="11" Label="Source2" />
+                  <Edge From="12" To="15" Label="Source1" />
+                  <Edge From="13" To="15" Label="Source2" />
+                  <Edge From="14" To="15" Label="Source3" />
+                  <Edge From="15" To="16" Label="Source1" />
+                  <Edge From="16" To="18" Label="Source1" />
+                  <Edge From="17" To="18" Label="Source2" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:LightHouseDevice">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>7</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>6</q1:int>
+                    <q1:int>7</q1:int>
+                    <q1:int>8</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+                <q1:BlockSize>5</q1:BlockSize>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="GroupWorkflow">
+              <Name>Lighthouse Process</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q1:LightHouseFrameToPosition">
+                      <q1:P>
+                        <q1:X>0.124</q1:X>
+                        <q1:Y>0</q1:Y>
+                        <q1:Z>0</q1:Z>
+                      </q1:P>
+                      <q1:Q>
+                        <q1:X>-0.124</q1:X>
+                        <q1:Y>0</q1:Y>
+                        <q1:Z>0</q1:Z>
+                      </q1:Q>
+                      <q1:SweepFrequency>60</q1:SweepFrequency>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Matrix</Selector>
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="Path" DisplayName="PositionPath" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="dsp:MatrixWriter">
+                      <dsp:Path>lh2-3d.raw</dsp:Path>
+                      <dsp:Suffix>Timestamp</dsp:Suffix>
+                      <dsp:Overwrite>false</dsp:Overwrite>
+                      <dsp:Layout>RowMajor</dsp:Layout>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Clock</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Sample" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="PositionTimePath" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>lh2-time_.csv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>false</io:Overwrite>
+                    <io:Suffix>Timestamp</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:Selector>Item1.Timestamp,Item2</io:Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Clock</Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>PulseWidth</Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>PulseType</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="PulsePath" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>lh2-pulse_.csv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>false</io:Overwrite>
+                    <io:Suffix>Timestamp</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:Selector>Timestamp,Value.Item1,Value.Item2,Value.Item3</io:Selector>
+                  </Expression>
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="0" To="7" Label="Source1" />
+                  <Edge From="0" To="12" Label="Source1" />
+                  <Edge From="0" To="13" Label="Source1" />
+                  <Edge From="0" To="14" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="1" To="6" Label="Source1" />
+                  <Edge From="2" To="4" Label="Source1" />
+                  <Edge From="2" To="5" Label="Source1" />
+                  <Edge From="2" To="8" Label="Source2" />
+                  <Edge From="3" To="4" Label="Source2" />
+                  <Edge From="5" To="9" Label="Source1" />
+                  <Edge From="7" To="8" Label="Source1" />
+                  <Edge From="8" To="9" Label="Source2" />
+                  <Edge From="9" To="11" Label="Source1" />
+                  <Edge From="10" To="11" Label="Source2" />
+                  <Edge From="12" To="15" Label="Source1" />
+                  <Edge From="13" To="15" Label="Source2" />
+                  <Edge From="14" To="15" Label="Source3" />
+                  <Edge From="15" To="16" Label="Source1" />
+                  <Edge From="16" To="18" Label="Source1" />
+                  <Edge From="17" To="18" Label="Source2" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:LightHouseDevice">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>8</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>6</q1:int>
+                    <q1:int>7</q1:int>
+                    <q1:int>8</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+                <q1:BlockSize>5</q1:BlockSize>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="GroupWorkflow">
+              <Name>Lighthouse Process</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q1:LightHouseFrameToPosition">
+                      <q1:P>
+                        <q1:X>0.124</q1:X>
+                        <q1:Y>0</q1:Y>
+                        <q1:Z>0</q1:Z>
+                      </q1:P>
+                      <q1:Q>
+                        <q1:X>-0.124</q1:X>
+                        <q1:Y>0</q1:Y>
+                        <q1:Z>0</q1:Z>
+                      </q1:Q>
+                      <q1:SweepFrequency>60</q1:SweepFrequency>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Matrix</Selector>
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="Path" DisplayName="PositionPath" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="dsp:MatrixWriter">
+                      <dsp:Path>lh3-3d_.raw</dsp:Path>
+                      <dsp:Suffix>Timestamp</dsp:Suffix>
+                      <dsp:Overwrite>false</dsp:Overwrite>
+                      <dsp:Layout>RowMajor</dsp:Layout>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Clock</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Sample" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="PositionTimePath" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>lh3-time_.csv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>false</io:Overwrite>
+                    <io:Suffix>Timestamp</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:Selector>Item1.Timestamp,Item2</io:Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Clock</Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>PulseWidth</Selector>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>PulseType</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Zip" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Timestamp" />
+                  </Expression>
+                  <Expression xsi:type="ExternalizedMapping">
+                    <Property Name="FileName" DisplayName="PulsePath" />
+                  </Expression>
+                  <Expression xsi:type="io:CsvWriter">
+                    <io:FileName>lh3-pulse_.csv</io:FileName>
+                    <io:Append>false</io:Append>
+                    <io:Overwrite>false</io:Overwrite>
+                    <io:Suffix>Timestamp</io:Suffix>
+                    <io:IncludeHeader>false</io:IncludeHeader>
+                    <io:Selector>Timestamp,Value.Item1,Value.Item2,Value.Item3</io:Selector>
+                  </Expression>
+                </Nodes>
+                <Edges>
+                  <Edge From="0" To="1" Label="Source1" />
+                  <Edge From="0" To="7" Label="Source1" />
+                  <Edge From="0" To="12" Label="Source1" />
+                  <Edge From="0" To="13" Label="Source1" />
+                  <Edge From="0" To="14" Label="Source1" />
+                  <Edge From="1" To="2" Label="Source1" />
+                  <Edge From="1" To="6" Label="Source1" />
+                  <Edge From="2" To="4" Label="Source1" />
+                  <Edge From="2" To="5" Label="Source1" />
+                  <Edge From="2" To="8" Label="Source2" />
+                  <Edge From="3" To="4" Label="Source2" />
+                  <Edge From="5" To="9" Label="Source1" />
+                  <Edge From="7" To="8" Label="Source1" />
+                  <Edge From="8" To="9" Label="Source2" />
+                  <Edge From="9" To="11" Label="Source1" />
+                  <Edge From="10" To="11" Label="Source2" />
+                  <Edge From="12" To="15" Label="Source1" />
+                  <Edge From="13" To="15" Label="Source2" />
+                  <Edge From="14" To="15" Label="Source3" />
+                  <Edge From="15" To="16" Label="Source1" />
+                  <Edge From="16" To="18" Label="Source1" />
+                  <Edge From="17" To="18" Label="Source2" />
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="q1:LightHouseDevice">
+                  <q1:DeviceIndex>
+                    <q1:SelectedIndex>6</q1:SelectedIndex>
+                    <q1:Indices>
+                      <q1:int>6</q1:int>
+                      <q1:int>7</q1:int>
+                      <q1:int>8</q1:int>
+                    </q1:Indices>
+                  </q1:DeviceIndex>
+                  <q1:BlockSize>5</q1:BlockSize>
+                </Combinator>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="GroupWorkflow">
+                <Name>Lighthouse Process</Name>
+                <Workflow>
+                  <Nodes>
+                    <Expression xsi:type="WorkflowInput">
+                      <Name>Source1</Name>
+                    </Expression>
+                    <Expression xsi:type="Combinator">
+                      <Combinator xsi:type="q1:LightHouseFrameToPosition">
+                        <q1:P>
+                          <q1:X>0.124</q1:X>
+                          <q1:Y>0</q1:Y>
+                          <q1:Z>0</q1:Z>
+                        </q1:P>
+                        <q1:Q>
+                          <q1:X>-0.124</q1:X>
+                          <q1:Y>0</q1:Y>
+                          <q1:Z>0</q1:Z>
+                        </q1:Q>
+                        <q1:SweepFrequency>60</q1:SweepFrequency>
+                      </Combinator>
+                    </Expression>
+                    <Expression xsi:type="MemberSelector">
+                      <Selector>Matrix</Selector>
+                    </Expression>
+                    <Expression xsi:type="ExternalizedMapping">
+                      <Property Name="Path" DisplayName="PositionPath" />
+                    </Expression>
+                    <Expression xsi:type="Combinator">
+                      <Combinator xsi:type="dsp:MatrixWriter">
+                        <dsp:Path>lh4-3d_.raw</dsp:Path>
+                        <dsp:Suffix>Timestamp</dsp:Suffix>
+                        <dsp:Overwrite>false</dsp:Overwrite>
+                        <dsp:Layout>RowMajor</dsp:Layout>
+                      </Combinator>
+                    </Expression>
+                    <Expression xsi:type="Combinator">
+                      <Combinator xsi:type="rx:Timestamp" />
+                    </Expression>
+                    <Expression xsi:type="WorkflowOutput" />
+                    <Expression xsi:type="MemberSelector">
+                      <Selector>Clock</Selector>
+                    </Expression>
+                    <Expression xsi:type="Combinator">
+                      <Combinator xsi:type="rx:Sample" />
+                    </Expression>
+                    <Expression xsi:type="Combinator">
+                      <Combinator xsi:type="rx:Zip" />
+                    </Expression>
+                    <Expression xsi:type="ExternalizedMapping">
+                      <Property Name="FileName" DisplayName="PositionTimePath" />
+                    </Expression>
+                    <Expression xsi:type="io:CsvWriter">
+                      <io:FileName>lh4-time_.csv</io:FileName>
+                      <io:Append>false</io:Append>
+                      <io:Overwrite>false</io:Overwrite>
+                      <io:Suffix>Timestamp</io:Suffix>
+                      <io:IncludeHeader>false</io:IncludeHeader>
+                      <io:Selector>Item1.Timestamp,Item2</io:Selector>
+                    </Expression>
+                    <Expression xsi:type="MemberSelector">
+                      <Selector>Clock</Selector>
+                    </Expression>
+                    <Expression xsi:type="MemberSelector">
+                      <Selector>PulseWidth</Selector>
+                    </Expression>
+                    <Expression xsi:type="MemberSelector">
+                      <Selector>PulseType</Selector>
+                    </Expression>
+                    <Expression xsi:type="Combinator">
+                      <Combinator xsi:type="rx:Zip" />
+                    </Expression>
+                    <Expression xsi:type="Combinator">
+                      <Combinator xsi:type="rx:Timestamp" />
+                    </Expression>
+                    <Expression xsi:type="ExternalizedMapping">
+                      <Property Name="FileName" DisplayName="PulsePath" />
+                    </Expression>
+                    <Expression xsi:type="io:CsvWriter">
+                      <io:FileName>lh4-pulse_.csv</io:FileName>
+                      <io:Append>false</io:Append>
+                      <io:Overwrite>false</io:Overwrite>
+                      <io:Suffix>Timestamp</io:Suffix>
+                      <io:IncludeHeader>false</io:IncludeHeader>
+                      <io:Selector>Timestamp,Value.Item1,Value.Item2,Value.Item3</io:Selector>
+                    </Expression>
+                  </Nodes>
+                  <Edges>
+                    <Edge From="0" To="1" Label="Source1" />
+                    <Edge From="0" To="7" Label="Source1" />
+                    <Edge From="0" To="12" Label="Source1" />
+                    <Edge From="0" To="13" Label="Source1" />
+                    <Edge From="0" To="14" Label="Source1" />
+                    <Edge From="1" To="2" Label="Source1" />
+                    <Edge From="1" To="6" Label="Source1" />
+                    <Edge From="2" To="4" Label="Source1" />
+                    <Edge From="2" To="5" Label="Source1" />
+                    <Edge From="2" To="8" Label="Source2" />
+                    <Edge From="3" To="4" Label="Source2" />
+                    <Edge From="5" To="9" Label="Source1" />
+                    <Edge From="7" To="8" Label="Source1" />
+                    <Edge From="8" To="9" Label="Source2" />
+                    <Edge From="9" To="11" Label="Source1" />
+                    <Edge From="10" To="11" Label="Source2" />
+                    <Edge From="12" To="15" Label="Source1" />
+                    <Edge From="13" To="15" Label="Source2" />
+                    <Edge From="14" To="15" Label="Source3" />
+                    <Edge From="15" To="16" Label="Source1" />
+                    <Edge From="16" To="18" Label="Source1" />
+                    <Edge From="17" To="18" Label="Source2" />
+                  </Edges>
+                </Workflow>
+              </Builder>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:PlanarPositionsToOrientation">
+                <q1:Window>0</q1:Window>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q1:InfoDevice">
+                <q1:DeviceIndex>
+                  <q1:SelectedIndex>2</q1:SelectedIndex>
+                  <q1:Indices>
+                    <q1:int>1</q1:int>
+                    <q1:int>2</q1:int>
+                  </q1:Indices>
+                </q1:DeviceIndex>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Clock</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Code</Selector>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>CodeStr</Selector>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Timestamp" />
+            </Expression>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="io:CsvWriter">
+                <io:FileName>log_.csv</io:FileName>
+                <io:Append>false</io:Append>
+                <io:Overwrite>false</io:Overwrite>
+                <io:Suffix>Timestamp</io:Suffix>
+                <io:IncludeHeader>false</io:IncludeHeader>
+                <io:Selector>Timestamp,Value.Item1,Value.Item2,Value.Item3</io:Selector>
+              </Builder>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="2" To="3" Label="Source1" />
+            <Edge From="2" To="4" Label="Source1" />
+            <Edge From="2" To="5" Label="Source1" />
+            <Edge From="3" To="6" Label="Source1" />
+            <Edge From="4" To="6" Label="Source2" />
+            <Edge From="5" To="6" Label="Source3" />
+            <Edge From="6" To="7" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="9" To="12" Label="Source1" />
+            <Edge From="9" To="14" Label="Source1" />
+            <Edge From="10" To="11" Label="Source1" />
+            <Edge From="12" To="13" Label="Source1" />
+            <Edge From="14" To="15" Label="Source1" />
+            <Edge From="16" To="17" Label="Source1" />
+            <Edge From="16" To="18" Label="Source1" />
+            <Edge From="16" To="22" Label="Source1" />
+            <Edge From="16" To="24" Label="Source1" />
+            <Edge From="17" To="19" Label="Source1" />
+            <Edge From="18" To="19" Label="Source2" />
+            <Edge From="19" To="20" Label="Source1" />
+            <Edge From="20" To="21" Label="Source1" />
+            <Edge From="22" To="23" Label="Source1" />
+            <Edge From="24" To="25" Label="Source1" />
+            <Edge From="25" To="26" Label="Source1" />
+            <Edge From="27" To="33" Label="Source2" />
+            <Edge From="28" To="29" Label="Source1" />
+            <Edge From="28" To="38" Label="Source1" />
+            <Edge From="28" To="41" Label="Source1" />
+            <Edge From="28" To="43" Label="Source1" />
+            <Edge From="28" To="45" Label="Source1" />
+            <Edge From="28" To="48" Label="Source1" />
+            <Edge From="28" To="50" Label="Source1" />
+            <Edge From="29" To="30" Label="Source1" />
+            <Edge From="30" To="31" Label="Source1" />
+            <Edge From="31" To="32" Label="Source1" />
+            <Edge From="32" To="33" Label="Source1" />
+            <Edge From="33" To="35" Label="Source1" />
+            <Edge From="33" To="34" Label="Source1" />
+            <Edge From="34" To="35" Label="Source2" />
+            <Edge From="35" To="36" Label="Source1" />
+            <Edge From="36" To="37" Label="Source1" />
+            <Edge From="38" To="39" Label="Source1" />
+            <Edge From="39" To="40" Label="Source1" />
+            <Edge From="41" To="42" Label="Source1" />
+            <Edge From="43" To="44" Label="Source1" />
+            <Edge From="45" To="46" Label="Source1" />
+            <Edge From="46" To="47" Label="Source1" />
+            <Edge From="48" To="49" Label="Source1" />
+            <Edge From="50" To="51" Label="Source1" />
+            <Edge From="51" To="52" Label="Source1" />
+            <Edge From="53" To="54" Label="Source1" />
+            <Edge From="54" To="61" Label="Source1" />
+            <Edge From="55" To="56" Label="Source1" />
+            <Edge From="56" To="61" Label="Source2" />
+            <Edge From="57" To="58" Label="Source1" />
+            <Edge From="58" To="61" Label="Source3" />
+            <Edge From="59" To="60" Label="Source1" />
+            <Edge From="60" To="61" Label="Source4" />
+            <Edge From="61" To="62" Label="Source1" />
+            <Edge From="63" To="64" Label="Source1" />
+            <Edge From="63" To="65" Label="Source1" />
+            <Edge From="63" To="66" Label="Source1" />
+            <Edge From="64" To="67" Label="Source1" />
+            <Edge From="65" To="67" Label="Source2" />
+            <Edge From="66" To="67" Label="Source3" />
+            <Edge From="67" To="68" Label="Source1" />
+            <Edge From="68" To="69" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
+    </Nodes>
+    <Edges />
+  </Workflow>
+</WorkflowBuilder>

@@ -36,16 +36,18 @@ namespace Bonsai.OEPCIe
                 switch (Code)
                 {
                     case 0:
-                        return "Watchdog barked. Where are your data sources?";
+                        return "Heartbeat.";
                     case 1:
-                        return "SERDES hardware-level parity error. Data corrupt.";
+                        return "Watchdog barked. Where are your data sources?";
                     case 2:
-                        return "Serialized data CRC failed. Data corrupt.";
+                        return "SERDES hardware-level parity error. Data corrupt.";
                     case 3:
-                        return "Too many remote devices for host to support.";
+                        return "Serialized data CRC failed. Data corrupt.";
                     case 4:
-                        return "Remote initialization error.";
+                        return "Too many remote devices for host to support.";
                     case 5:
+                        return "Remote initialization error.";
+                    case 6:
                         return "Malformed packet during SERDES demultiplexing.";
                     default:
                         return "Unknown code.";

@@ -18,6 +18,10 @@ namespace Bonsai.OEPCIe
         public OEPCIe()
         {
             DAQ = new oe.Context();
+
+            // Set block read size
+            // TODO: this should be a context option along with the paths
+            DAQ.SetBlockReadSize(8192);
         }
 
         public OEPCIe(string config_path,
@@ -25,6 +29,10 @@ namespace Bonsai.OEPCIe
                       string signal_path)
         {
             DAQ = new oe.Context(config_path, read_path, signal_path);
+
+            // Set block read size
+            // TODO: this should be a context option along with the paths
+            DAQ.SetBlockReadSize(8192);
         }
 
         public void Start()

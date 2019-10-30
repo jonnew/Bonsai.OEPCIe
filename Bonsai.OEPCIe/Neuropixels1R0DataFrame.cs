@@ -7,9 +7,9 @@ namespace Bonsai.OEPCIe
     /// <summary>
     /// Provides Bonsai-friendly version of an Neuropixels6BBlock
     /// </summary>
-    public class Neuropixels6BDataFrame
+    public class Neuropixels1R0DataFrame
     {
-        public Neuropixels6BDataFrame(Neuropixels6BDataBlock dataBlock, int hardware_clock_hz)
+        public Neuropixels1R0DataFrame(Neuropixels1R0DataBlock dataBlock, int hardware_clock_hz)
         {
             LFPClock = GetClock(dataBlock.SpikeClock);
             LFPClock = GetClock(dataBlock.LFPClock);

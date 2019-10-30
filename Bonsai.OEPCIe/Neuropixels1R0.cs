@@ -11,14 +11,14 @@ namespace Bonsai.OEPCIe
     using oe;
 
     [Description("Acquires data from a single Neuropixels-6B chip.")]
-    public class Neuropixels6B : Source<Neuropixels6BDataFrame>
+    public class Neuropixels1R0 : Source<Neuropixels1R0DataFrame>
     {
         private OEPCIeDisposable oepcie; // Reference to global oepcie configuration set
         private Dictionary<int, oe.lib.device_t> devices;
-        IObservable<Neuropixels6BDataFrame> source;
+        IObservable<Neuropixels1R0DataFrame> source;
         private int hardware_clock_hz;
 
-        public Neuropixels6B()
+        public Neuropixels1R0()
         {
             // Reference to context
             this.oepcie = OEPCIeManager.ReserveDAQ();
@@ -28,7 +28,7 @@ namespace Bonsai.OEPCIe
 
             // Find all RHD devices
             devices = oepcie.DAQ.DeviceMap.Where(
-                    pair => pair.Value.id == (uint)Device.DeviceID.NEUROPIX6B
+                    pair => pair.Value.id == (uint)Device.DeviceID.NEUROPIX1R0
             ).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no devices to use
@@ -39,10 +39,10 @@ namespace Bonsai.OEPCIe
             DeviceIndex = new DeviceIndexSelection();
             DeviceIndex.Indices = devices.Keys.ToArray();
 
-            source = Observable.Create<Neuropixels6BDataFrame>(observer =>
+            source = Observable.Create<Neuropixels1R0DataFrame>(observer =>
             {
                 EventHandler<FrameReceivedEventArgs> inputReceived;
-                var data_block = new Neuropixels6BDataBlock(BlockSize);
+                var data_block = new Neuropixels1R0DataBlock(BlockSize);
 
                 oepcie.Environment.Start();
 
@@ -55,8 +55,8 @@ namespace Bonsai.OEPCIe
                         // Pull the sample
                         if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                         {
-                            observer.OnNext(new Neuropixels6BDataFrame(data_block, hardware_clock_hz)); //TODO: Does this deep copy??
-                            data_block = new Neuropixels6BDataBlock(BlockSize);
+                            observer.OnNext(new Neuropixels1R0DataFrame(data_block, hardware_clock_hz)); //TODO: Does this deep copy??
+                            data_block = new Neuropixels1R0DataBlock(BlockSize);
                         }
                     }
                 };
@@ -71,7 +71,7 @@ namespace Bonsai.OEPCIe
             });
         }
 
-        public override IObservable<Neuropixels6BDataFrame> Generate()
+        public override IObservable<Neuropixels1R0DataFrame> Generate()
         {
             return source;
         }

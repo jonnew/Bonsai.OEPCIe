@@ -12,8 +12,6 @@ namespace Bonsai.OEPCIe.Prototyping
         double fs;
         bool alignment_needed;
         internal ushort[] image_data;
-        int s_raw = 0;
-        ushort last_row = 0;
         const ushort NO_UPDATE = 65535; // 2^16 - 1
 
         //int col_start = 37; // The first 38 columns of the frame are used for firmware stuff

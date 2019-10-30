@@ -9,7 +9,7 @@ namespace Bonsai.OEPCIe
     /// <summary>
     /// Provides an low-level representation of a multi round-robbin sample of a Neuropixels6B Chip
     /// </summary>
-    public class Neuropixels6BDataBlock
+    public class Neuropixels1R0DataBlock
     {
         private int HyperFramesPerBlock;
         public const int NumChannels = 384;
@@ -52,7 +52,7 @@ namespace Bonsai.OEPCIe
         ushort[,] spikeData;
         ushort[,] lfpData;
 
-        public Neuropixels6BDataBlock(int hyper_frames_per_block = 1)
+        public Neuropixels1R0DataBlock(int hyper_frames_per_block = 1)
         {
             HyperFramesPerBlock = hyper_frames_per_block;
 
