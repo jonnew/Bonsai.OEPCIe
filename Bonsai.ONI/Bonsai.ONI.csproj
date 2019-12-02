@@ -140,6 +140,7 @@
     <Compile Include="BNO055Device.cs" />
     <Compile Include="DeviceIndexSelection.cs" />
     <Compile Include="DeviceIndexSelectionTypeConverter.cs" />
+    <Compile Include="FMCVLinkDevice.cs" />
     <Compile Include="ElectricalStimulator.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FrameReceivedEventArgs.cs" />
@@ -162,9 +163,12 @@
     <Compile Include="ONIManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Neuropixels1R0DataBlock.cs" />
+    <Compile Include="AD7617DataBlock.cs" />
     <Compile Include="RHDDataBlock.cs" />
     <Compile Include="Neuropixels1R0DataFrame.cs" />
+    <Compile Include="AD7617DataFrame.cs" />
     <Compile Include="RHDDataFrame.cs" />
+    <Compile Include="AD7617Device.cs" />
     <Compile Include="RHDDevice.cs" />
     <Compile Include="HeartbeatDevice.cs" />
     <Compile Include="GenericDevice.cs" />

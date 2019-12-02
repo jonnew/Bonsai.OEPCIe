@@ -16,7 +16,6 @@ namespace Bonsai.ONI
         private ONIDisposable oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<RHDDataFrame> source;
-        private int hardware_clock_hz;
 
         public RHDDevice()
         {
@@ -24,7 +23,7 @@ namespace Bonsai.ONI
             this.oni_ref = ONIManager.ReserveDAQ();
 
             // Find the hardware clock rate
-            hardware_clock_hz = oni_ref.DAQ.AcquisitionClockHz;
+            var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
             devices = oni_ref.DAQ.DeviceMap.Where(
@@ -61,7 +60,7 @@ namespace Bonsai.ONI
                         // Pull the sample
                         if (data_block.FillFromFrame(frame, DeviceIndex.SelectedIndex))
                         {
-                            observer.OnNext(new RHDDataFrame(data_block, hardware_clock_hz)); //TODO: Does this deep copy??
+                            observer.OnNext(new RHDDataFrame(data_block, sample_clock_hz)); //TODO: Does this deep copy??
                             data_block = new RHDDataBlock(NumEphysChannels((int)devices[DeviceIndex.SelectedIndex].id), BlockSize);
                         }
                     }

@@ -14,7 +14,6 @@ namespace Bonsai.ONI.Prototyping
         private ONIDisposable oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<PCEImage> source;
-        private int hardware_clock_hz;
 
         public PCECameraReader()
         {
@@ -22,7 +21,7 @@ namespace Bonsai.ONI.Prototyping
             oni_ref = ONIManager.ReserveDAQ();
 
             // Find the hardware clock rate
-            hardware_clock_hz = oni_ref.DAQ.AcquisitionClockHz;
+            var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
             devices = oni_ref.DAQ.DeviceMap.Where(pair => pair.Value.id == 10000).ToDictionary(x => x.Key, x => x.Value);
@@ -42,7 +41,7 @@ namespace Bonsai.ONI.Prototyping
             source = Observable.Create<PCEImage>(observer =>
             {
                 EventHandler<FrameReceivedEventArgs> inputReceived;
-                var image = new PCEImage(rows, cols, image_data, hardware_clock_hz); 
+                var image = new PCEImage(rows, cols, image_data, sample_clock_hz); 
 
                 oni_ref.Environment.Start();
 
@@ -62,7 +61,7 @@ namespace Bonsai.ONI.Prototyping
                         {
                             observer.OnNext(image);
                             image_data = image.image_data;
-                            image = new PCEImage(rows, cols, image_data, hardware_clock_hz);
+                            image = new PCEImage(rows, cols, image_data, sample_clock_hz);
                         }
                     }
                 };

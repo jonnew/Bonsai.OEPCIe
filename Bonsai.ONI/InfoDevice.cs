@@ -8,7 +8,6 @@ using System.Drawing.Design;
 
 namespace Bonsai.ONI
 {
-
     [Description("Event information device.")]
     public class InfoDevice : Source<InfoDataFrame>
     {
@@ -28,17 +27,15 @@ namespace Bonsai.ONI
         private ONIDisposable oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<InfoDataFrame> source;
-        //private int hardware_clock_hz;
 
         public InfoDevice()
         {
-
             // Reference to context
             this.oni_ref = ONIManager.ReserveDAQ();
 
             // Find the hardware clock rate
             var sys_clock_hz = oni_ref.DAQ.SystemClockHz;
-            var hardware_clock_hz = oni_ref.DAQ.AcquisitionClockHz;
+            var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
             devices = oni_ref.DAQ.DeviceMap.Where(
@@ -64,7 +61,7 @@ namespace Bonsai.ONI
 
                     // If this frame contains data from the selected device_index
                     if (frame.DeviceIndices.Contains(DeviceIndex.SelectedIndex))
-                        observer.OnNext(new InfoDataFrame(frame, DeviceIndex.SelectedIndex, hardware_clock_hz, sys_clock_hz));
+                        observer.OnNext(new InfoDataFrame(frame, DeviceIndex.SelectedIndex, sample_clock_hz, sys_clock_hz));
                 };
 
                 oni_ref.Environment.FrameInputReceived += inputReceived;

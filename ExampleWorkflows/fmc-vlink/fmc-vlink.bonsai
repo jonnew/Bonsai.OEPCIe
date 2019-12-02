@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.4.0"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:q1="clr-namespace:Bonsai.ONI;assembly=Bonsai.ONI"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>true</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:FMCVLinkDevice">
+          <q1:DeviceIndex>
+            <q1:SelectedIndex>4</q1:SelectedIndex>
+            <q1:Indices>
+              <q1:int>4</q1:int>
+            </q1:Indices>
+          </q1:DeviceIndex>
+          <q1:AllowExtendedVoltageRange>false</q1:AllowExtendedVoltageRange>
+          <q1:LinkAEnabled>true</q1:LinkAEnabled>
+          <q1:LinkBEnabled>true</q1:LinkBEnabled>
+          <q1:LinkAVoltage>5</q1:LinkAVoltage>
+          <q1:LinkBVoltage>5</q1:LinkBVoltage>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>

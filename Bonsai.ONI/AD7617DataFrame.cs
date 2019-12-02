@@ -4,16 +4,15 @@
 namespace Bonsai.ONI
 {
     /// <summary>
-    /// Provides Bonsai-friendly version of an RHDDataBlock
+    /// Provides Bonsai-friendly version of an AD7617DataBlock
     /// </summary>
-    public class RHDDataFrame
+    public class AD7617DataFrame
     {
-        public RHDDataFrame(RHDDataBlock dataBlock, int hardware_clock_hz)
+        public AD7617DataFrame(AD7617DataBlock dataBlock, int hardware_clock_hz)
         {
             Clock = GetClock(dataBlock.Clock);
             Time = GetTime(dataBlock.Clock, hardware_clock_hz);
-            EphysData = GetEphysData(dataBlock.EphysData);
-            AuxiliaryData = GetAuxiliaryData(dataBlock.AuxiliaryData);
+            Data = GetData(dataBlock.Data);
         }
 
         Mat GetClock(ulong[] data)
@@ -32,28 +31,13 @@ namespace Bonsai.ONI
             return Mat.FromArray(ts, 1, data.Length, Depth.F64, 1); 
         }
 
-        Mat GetEphysData(ushort[,] data)
+        Mat GetData(short[,] data)
         {
             if (data.Length == 0) return null;
             var numChannels = data.GetLength(0);
             var numSamples = data.GetLength(1);
 
-            var output = new Mat(numChannels, numSamples, Depth.U16, 1);
-            using (var header = Mat.CreateMatHeader(data))
-            {
-                CV.Convert(header, output);
-            }
-
-            return output;
-        }
-
-        Mat GetAuxiliaryData(int[,] data)
-        {
-            if (data.Length == 0) return null;
-            var numChannels = data.GetLength(0);
-            var numSamples = data.GetLength(1);
-
-            var output = new Mat(numChannels, numSamples, Depth.U16, 1);
+            var output = new Mat(numChannels, numSamples, Depth.S16, 1);
             using (var header = Mat.CreateMatHeader(data))
             {
                 CV.Convert(header, output);
@@ -66,9 +50,7 @@ namespace Bonsai.ONI
 
         public Mat Time { get; private set; }
 
-        public Mat EphysData { get; private set; }
-
-        public Mat AuxiliaryData { get; private set; }
+        public Mat Data { get; private set; }
 
     }
 }

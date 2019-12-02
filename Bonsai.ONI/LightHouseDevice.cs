@@ -24,7 +24,7 @@ namespace Bonsai.ONI
 
             // Find the hardware clock rate
             var sys_clock_hz = oni_ref.DAQ.SystemClockHz;
-            var sample_clock_hz = oni_ref.DAQ.AcquisitionClockHz;
+            var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
             devices = oni_ref.DAQ.DeviceMap.Where(

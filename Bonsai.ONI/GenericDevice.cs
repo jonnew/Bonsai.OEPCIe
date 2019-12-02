@@ -20,9 +20,6 @@ namespace Bonsai.ONI
             // Reference to context
             this.oni_ref = ONIManager.ReserveDAQ();
 
-            // Find the hardware clock rate
-            hardware_clock_hz = oni_ref.DAQ.AcquisitionClockHz;
-
             source = Observable.Create<Mat>(observer =>
             {
                 EventHandler<FrameReceivedEventArgs> inputReceived;
