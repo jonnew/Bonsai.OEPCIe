@@ -11,14 +11,14 @@ namespace Bonsai.ONI
     [Description("Low-level access to any  device (used for debugging).")]
     public class GenericDevice : Source<Mat>
     {
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         IObservable<Mat> source;
         private int hardware_clock_hz;
 
         public GenericDevice()
         {
             // Reference to context
-            this.oni_ref = ONIManager.ReserveDAQ();
+            this.oni_ref = ONIManager.ReserveContext();
 
             source = Observable.Create<Mat>(observer =>
             {

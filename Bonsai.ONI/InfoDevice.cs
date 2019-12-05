@@ -24,21 +24,21 @@ namespace Bonsai.ONI
             EBADPACKET = 6,   // Malformed packet during SERDES demultiplexing
         }
 
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<InfoDataFrame> source;
 
         public InfoDevice()
         {
             // Reference to context
-            this.oni_ref = ONIManager.ReserveDAQ();
+            //this.oni_ref = ONIManager.ReserveContext();
 
             // Find the hardware clock rate
-            var sys_clock_hz = oni_ref.DAQ.SystemClockHz;
+            var sys_clock_hz = oni_ref.AcqContext.SystemClockHz;
             var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
-            devices = oni_ref.DAQ.DeviceMap.Where(
+            devices = oni_ref.AcqContext.DeviceMap.Where(
                     pair => pair.Value.id == (uint)oni.Device.DeviceID.INFO
             ).ToDictionary(x => x.Key, x => x.Value);
 

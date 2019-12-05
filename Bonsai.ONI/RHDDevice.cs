@@ -13,20 +13,20 @@ namespace Bonsai.ONI
     [Description("Acquires data from a single RHDxxxx bioamplifier chip.")]
     public class RHDDevice : Source<RHDDataFrame>
     {
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<RHDDataFrame> source;
 
         public RHDDevice()
         {
             // Reference to context
-            this.oni_ref = ONIManager.ReserveDAQ();
+            this.oni_ref = ONIManager.ReserveContext();
 
             // Find the hardware clock rate
             var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
-            devices = oni_ref.DAQ.DeviceMap.Where(
+            devices = oni_ref.AcqContext.DeviceMap.Where(
                     pair => pair.Value.id == (uint)Device.DeviceID.RHD2132 || pair.Value.id == (uint)Device.DeviceID.RHD2164
             ).ToDictionary(x => x.Key, x => x.Value);
 

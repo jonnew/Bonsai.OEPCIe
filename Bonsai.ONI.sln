@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bonsai.ONI", "Bonsai.ONI\Bo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bonsai.ONI.Design", "Bonsai.ONI.Design\Bonsai.ONI.Design.csproj", "{DD64535C-476B-48EF-BA56-52E4A3D1FAFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bonsai.ONI.Prototyping", "Bonsai.ONI.Prototyping\Bonsai.ONI.Prototyping.csproj", "{BD39F27F-CC27-4335-B830-1039F0C1A44A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "clroni", "..\open-ephys-pcie\api\clroni\clroni\clroni.csproj", "{1524A9F6-323D-472D-B2F0-CADAEA637FD2}"
 EndProject
 Global
@@ -44,18 +42,6 @@ Global
 		{DD64535C-476B-48EF-BA56-52E4A3D1FAFA}.Release|x64.Build.0 = Release|x64
 		{DD64535C-476B-48EF-BA56-52E4A3D1FAFA}.Release|x86.ActiveCfg = Release|x86
 		{DD64535C-476B-48EF-BA56-52E4A3D1FAFA}.Release|x86.Build.0 = Release|x86
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Debug|x64.ActiveCfg = Debug|x64
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Debug|x64.Build.0 = Debug|x64
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Debug|x86.Build.0 = Debug|Any CPU
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Release|x64.ActiveCfg = Release|x64
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Release|x64.Build.0 = Release|x64
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Release|x86.ActiveCfg = Release|Any CPU
-		{BD39F27F-CC27-4335-B830-1039F0C1A44A}.Release|x86.Build.0 = Release|Any CPU
 		{1524A9F6-323D-472D-B2F0-CADAEA637FD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1524A9F6-323D-472D-B2F0-CADAEA637FD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1524A9F6-323D-472D-B2F0-CADAEA637FD2}.Debug|x64.ActiveCfg = Debug|x64

@@ -14,7 +14,7 @@ namespace Bonsai.ONI.Prototyping
     [Description("Update exposure pattern on PCE camera prototype.")]
     public class PCECameraWriter : Sink<Mat>
     {
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
 
         int rows;
@@ -23,10 +23,10 @@ namespace Bonsai.ONI.Prototyping
         public PCECameraWriter() {
 
             // Reference to context
-            oni_ref = ONIManager.ReserveDAQ();
+            oni_ref = ONIManager.ReserveContext();
 
             // Find all RHD devices
-            devices = oni_ref.DAQ.DeviceMap.Where(pair => pair.Value.id == 10000).ToDictionary(x => x.Key, x => x.Value);
+            devices = oni_ref.AcqContext.DeviceMap.Where(pair => pair.Value.id == 10000).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no devices to use
             if (devices.Count == 0)
@@ -37,7 +37,7 @@ namespace Bonsai.ONI.Prototyping
 
             //rows = (int)oni.DAQ.DeviceMap[DeviceIndex.SelectedIndex].num_writes;
             rows = 256;
-            cols = (int)oni_ref.DAQ.DeviceMap[DeviceIndex.SelectedIndex].write_size / 4; //4 // ushorts, First element is row index and there is extra garbage at end
+            cols = (int)oni_ref.AcqContext.DeviceMap[DeviceIndex.SelectedIndex].write_size / 4; //4 // ushorts, First element is row index and there is extra garbage at end
         }
 
         // IplImage case
@@ -79,7 +79,7 @@ namespace Bonsai.ONI.Prototyping
                     for (int i = 0; i < rows; i++) {
                         var row = data.GetRow(i);
                         row[0] = new Scalar(i + 16384, 0, 0, 0);
-                        oni_ref.DAQ.Write((uint)DeviceIndex.SelectedIndex, row.Data, 4 * (data.Cols));
+                        oni_ref.AcqContext.Write((uint)DeviceIndex.SelectedIndex, row.Data, 4 * (data.Cols));
                     }
 
                 });

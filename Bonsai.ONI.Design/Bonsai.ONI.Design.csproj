@@ -120,6 +120,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Bonsai.Design.ONIe.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>

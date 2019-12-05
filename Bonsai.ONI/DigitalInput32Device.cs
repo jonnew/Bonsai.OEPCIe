@@ -29,7 +29,7 @@ namespace Bonsai.ONI
             SERDESCHKSUM,     // SERDES packet checksum error detected
         }
 
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<DigitalInput32DataFrame> source;
         private int hardware_clock_hz;
@@ -37,13 +37,13 @@ namespace Bonsai.ONI
         public DigitalInput32Device() {
 
             // Reference to context
-            this.oni_ref = ONIManager.ReserveDAQ();
+            //this.oni_ref = ONIManager.ReserveContext();
 
             // Find the hardware clock rate
             var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
-            devices = oni_ref.DAQ.DeviceMap.Where(
+            devices = oni_ref.AcqContext.DeviceMap.Where(
                     pair => pair.Value.id == (uint)Device.DeviceID.DINPUT32
             ).ToDictionary(x => x.Key, x => x.Value);
 

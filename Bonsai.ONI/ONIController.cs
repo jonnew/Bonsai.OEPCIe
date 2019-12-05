@@ -6,9 +6,10 @@ using System.Collections.Concurrent;
 
 namespace Bonsai.ONI
 {
-    public class ONIController
+    public class ONIController : IDisposable
     {
-        public oni.Context DAQ { get; private set; }
+        bool disposed;
+        public oni.Context AcqContext { get; private set; }
         private Task CollectFrames;
         private CancellationTokenSource TokenSource;
         private CancellationToken CollectFramesToken;
@@ -17,30 +18,32 @@ namespace Bonsai.ONI
 
         public ONIController()
         {
-            DAQ = new oni.Context();
+            AcqContext = new oni.Context();
 
             // Set block read size
             // TODO: this should be a context option along with the paths
-            DAQ.SetBlockReadSize(8192);
+            AcqContext.SetBlockReadSize(8192);
         }
 
         public ONIController(string config_path,
                       string read_path,
-                      string signal_path)
+                      string write_path,
+                      string signal_path,
+                      int block_read_size)
         {
-            DAQ = new oni.Context(config_path, read_path, signal_path);
+            AcqContext = new oni.Context(config_path, read_path, write_path, signal_path);
 
             // Set block read size
             // TODO: this should be a context option along with the paths
-            DAQ.SetBlockReadSize(8192);
+            AcqContext.SetBlockReadSize(block_read_size);
         }
 
         public void Start()
         {
             if (CollectFrames == null || CollectFrames.Status == TaskStatus.RanToCompletion)
             {
-                DAQ.Reset();
-                DAQ.Start();
+                AcqContext.Reset();
+                AcqContext.Start();
                 TokenSource = new CancellationTokenSource();
                 CollectFramesToken = TokenSource.Token;
 
@@ -48,7 +51,7 @@ namespace Bonsai.ONI
                 {
                     while (!CollectFramesToken.IsCancellationRequested)
                     {
-                        OnFrameReceived(new FrameReceivedEventArgs(DAQ.ReadFrame()));
+                        OnFrameReceived(new FrameReceivedEventArgs(AcqContext.ReadFrame()));
                     }
                 },
                 CollectFramesToken,
@@ -63,9 +66,38 @@ namespace Bonsai.ONI
             {
                 TokenSource.Cancel();
                 Task.WaitAll(CollectFrames); // Wait for theads to exit
-                DAQ.Stop(); // Stop the hardware
-                DAQ.Reset();
+                AcqContext.Stop(); // Stop the hardware
+                AcqContext.Reset();
             }
+        }
+
+        public void Close()
+        {
+            Stop();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~ONIController()
+        {
+            Dispose(false);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    AcqContext.Destroy();
+                    disposed = true;
+                }
+            }
+        }
+
+        void IDisposable.Dispose()
+        {
+            Close();
         }
 
         void OnFrameReceived(FrameReceivedEventArgs e)

@@ -12,7 +12,7 @@ namespace Bonsai.ONI
     [Description("Acquires data from a single Neuropixels-6B chip.")]
     public class Neuropixels1R0Device : Source<Neuropixels1R0DataFrame>
     {
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<Neuropixels1R0DataFrame> source;
         private int hardware_clock_hz;
@@ -20,13 +20,13 @@ namespace Bonsai.ONI
         public Neuropixels1R0Device()
         {
             // Reference to context
-            this.oni_ref = ONIManager.ReserveDAQ();
+            this.oni_ref = ONIManager.ReserveContext();
 
             // Find the hardware clock rate
             var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
-            devices = oni_ref.DAQ.DeviceMap.Where(
+            devices = oni_ref.AcqContext.DeviceMap.Where(
                     pair => pair.Value.id == (uint)oni.Device.DeviceID.NEUROPIX1R0
             ).ToDictionary(x => x.Key, x => x.Value);
 

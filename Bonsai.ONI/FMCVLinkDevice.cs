@@ -11,7 +11,7 @@ namespace Bonsai.ONI
     [Combinator]
     [WorkflowElementCategory(ElementCategory.Sink)]
     [Description("Controls the link voltage on Open Ephys fmc-host revision 1.3.")]
-    public class FMCVLinkDevice
+    public class FMCVLinkDevice : Device
     {
         // Control registers (see oedevices.h)
         public enum Register
@@ -22,59 +22,41 @@ namespace Bonsai.ONI
             SAVELINKB = 3
         }
 
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
-        private Dictionary<int, oni.lib.device_t> devices;
-
         // Controls both together
         public IObservable<bool> Process(IObservable<bool> source)
         {
-            return source.Do(
-                input =>
-                {
-                    LinkAEnabled = input;
-                    LinkBEnabled = input;
-                });
+            return Process(source.Zip(source, (lhs, rhs) => new Tuple<bool, bool>(lhs, rhs))).Select(x => { return x.Item1; });
         }
 
         // Controls A and B separately
         public IObservable<Tuple<bool, bool>> Process(IObservable<Tuple<bool, bool>> source)
         {
-            return source.Do(
-                input =>
+            return Observable.Using(
+                () => ONIManager.ReserveContext(ContextName), ctx =>
                 {
-                    if (input.Item1)
-                        LinkAVoltage = link_a_voltage;
-                    else
-                        oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKAVOLTAGE, 0);
+                    // Get device inidicies
+                    var devices = ObservableDevice.FindMachingDevices(ctx, oni.Device.DeviceID.FMCVCTRL);
 
-                    if (input.Item2)
-                        LinkAVoltage = link_b_voltage;
-                    else
-                        oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKBVOLTAGE, 0);
+                    // Stop here if there are no estim devices to use
+                    if (devices.Count == 0)
+                        throw new oni.ONIException((int)oni.lib.Error.DEVIDX);
+
+                    DeviceIndex.Indices = devices.Keys.ToArray();
+
+                    return source.Do(input =>
+                        {
+                            if (input.Item1)
+                                ctx.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKAVOLTAGE, (uint)(LinkAVoltage * 10));
+                            else
+                                ctx.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKAVOLTAGE, 0);
+
+                            if (input.Item2)
+                                ctx.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKBVOLTAGE, (uint)(LinkBVoltage * 10));
+                            else
+                                ctx.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKBVOLTAGE, 0);
+                        });
                 });
         }
-
-        public FMCVLinkDevice()
-        {
-            // Reference to context
-            this.oni_ref = ONIManager.ReserveDAQ(); // TODO: Somehow get the context index from the configuration file
-
-            // Find all estim devices
-            devices = oni_ref.DAQ.DeviceMap.Where(pair => pair.Value.id == (uint)oni.Device.DeviceID.FMCVCTRL).ToDictionary(x => x.Key, x => x.Value);
-
-            // Stop here if there are no estim devices to use
-            if (devices.Count == 0)
-                throw new oni.ONIException((int)oni.lib.Error.DEVIDX);
-
-            // Set device selection
-            DeviceIndex = new DeviceIndexSelection();
-            DeviceIndex.Indices = devices.Keys.ToArray();
-
-        }
-
-        [Editor("Bonsai.ONI.Design.DeviceIndexCollectionEditor, Bonsai.ONI.Design", typeof(UITypeEditor))]
-        [Description("The FMC link voltage controller handled by this node.")]
-        public DeviceIndexSelection DeviceIndex { get; set; }
 
         private bool allow_extended_voltage = false;
         private double v_high = 6.5;
@@ -93,37 +75,37 @@ namespace Bonsai.ONI
             }
         }
 
-        bool link_a_enabled = true;
-        [Description("Enable Link A")]
-        //[Editor(DesignTypes.NumericUpDownEditor, typeof(UITypeEditor))]
-        public bool LinkAEnabled {
-            get
-            {
-                return link_a_enabled;
-            }
+        //bool link_a_enabled = true;
+        //[Description("Enable Link A")]
+        ////[Editor(DesignTypes.NumericUpDownEditor, typeof(UITypeEditor))]
+        //public bool LinkAEnabled {
+        //    get
+        //    {
+        //        return link_a_enabled;
+        //    }
 
-            set
-            {
-                link_a_enabled = value;
-                LinkAVoltage = link_a_voltage;
-            }
-        }
+        //    set
+        //    {
+        //        link_a_enabled = value;
+        //        LinkAVoltage = link_a_voltage;
+        //    }
+        //}
 
-        bool link_b_enabled = true;
-        [Description("Enable Link B")]
-        //[Editor(Chec.NumericUpDownEditor, typeof(UITypeEditor))]
-        public bool LinkBEnabled {
-            get
-            {
-                return link_b_enabled;
-            }
+        //bool link_b_enabled = true;
+        //[Description("Enable Link B")]
+        ////[Editor(Chec.NumericUpDownEditor, typeof(UITypeEditor))]
+        //public bool LinkBEnabled {
+        //    get
+        //    {
+        //        return link_b_enabled;
+        //    }
 
-            set
-            {
-                link_b_enabled = value;
-                LinkBVoltage = link_b_voltage;
-            }
-        }
+        //    set
+        //    {
+        //        link_b_enabled = value;
+        //        LinkBVoltage = link_b_voltage;
+        //    }
+        //}
 
         private double link_a_voltage = 3.3;
         [Description("Link A voltage (3.3V to 11.0V.")]
@@ -135,14 +117,14 @@ namespace Bonsai.ONI
             get { return link_a_voltage; }
             set
             {
-                if (link_a_enabled)
-                {
+                //if (link_a_enabled)
+                //{
                     var v_req = value > v_high ? v_high : value;
-                    oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKAVOLTAGE, (uint)(v_req * 10));
+                    //oni_ref.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKAVOLTAGE, (uint)(v_req * 10));
                     link_a_voltage = v_req;
-                } else {
-                    oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKAVOLTAGE, 0);
-                }
+                //} else {
+                //    oni_ref.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKAVOLTAGE, 0);
+                //}
 
             }
         }
@@ -157,14 +139,13 @@ namespace Bonsai.ONI
             get { return link_b_voltage; }
             set
             {
-                if (link_b_enabled)
-                {
+                //if (link_b_enabled)
+                //{
                     var v_req = value > v_high ? v_high : value;
-                    oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKBVOLTAGE, (uint)(v_req * 10));
                     link_b_voltage = v_req;
-                } else {
-                    oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKBVOLTAGE, 0);
-                }
+                //} else {
+                //    oni_ref.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.LINKBVOLTAGE, 0);
+                //}
             }
         }
     }

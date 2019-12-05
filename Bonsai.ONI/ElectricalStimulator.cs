@@ -35,7 +35,7 @@ namespace Bonsai.ONI
         }
 
 
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
 
         public override IObservable<bool> Process(IObservable<bool> source)
@@ -44,7 +44,7 @@ namespace Bonsai.ONI
                 input =>
                 {
                     if (input)
-                        oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRIGGER, 0x01);
+                        oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRIGGER, 0x01);
                 });
         }
 
@@ -52,10 +52,10 @@ namespace Bonsai.ONI
         public ElectricalStimulator() //oni.Context context, uint (uint)DeviceIndex.SelectedIndex)
         {
             // Reference to context
-            this.oni_ref = ONIManager.ReserveDAQ(); // TODO: Somehow get the context index from the configuration file
+            this.oni_ref = ONIManager.LinkContext(ctx_name);
 
             // Find all estim devices
-            devices = oni_ref.DAQ.DeviceMap.Where(pair => pair.Value.id == (uint)oni.Device.DeviceID.ESTIM).ToDictionary(x => x.Key, x => x.Value);
+            devices = oni_ref.AcqContext.DeviceMap.Where(pair => pair.Value.id == (uint)oni.Device.DeviceID.ESTIM).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no estim devices to use
             if (devices.Count == 0)
@@ -90,7 +90,7 @@ namespace Bonsai.ONI
         void ResetStimulatorStateMachine()
         {
             // TODO: device index ignore currently
-            oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.RESET, 0x01);
+            oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.RESET, 0x01);
         }
 
         private uint currentK(double currentuA)
@@ -115,7 +115,7 @@ namespace Bonsai.ONI
         public double Phase1CurrentuA
         {
             get { return pulse_phase_one_current_uA; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.CURRENT1, currentK(value)); pulse_phase_one_current_uA = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.CURRENT1, currentK(value)); pulse_phase_one_current_uA = value; }
         }
 
         private double pulse_phase_two_current_uA;
@@ -124,7 +124,7 @@ namespace Bonsai.ONI
         public double Phase2CurrentuA
         {
             get { return pulse_phase_two_current_uA; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.CURRENT2, currentK(value)); pulse_phase_two_current_uA = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.CURRENT2, currentK(value)); pulse_phase_two_current_uA = value; }
         }
 
         private double resting_current_uA;
@@ -132,7 +132,7 @@ namespace Bonsai.ONI
         public double RestingCurrentuA
         {
             get { return resting_current_uA; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.RESTCURR, currentK(value)); resting_current_uA = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.RESTCURR, currentK(value)); resting_current_uA = value; }
         }
 
         private uint pulse_phase_one_duration_usec;
@@ -141,7 +141,7 @@ namespace Bonsai.ONI
         public uint PulsePhase1DurationuSec
         {
             get { return pulse_phase_one_duration_usec; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEDUR1, duration(value)); pulse_phase_one_duration_usec = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEDUR1, duration(value)); pulse_phase_one_duration_usec = value; }
         }
 
         private uint ipi;
@@ -150,7 +150,7 @@ namespace Bonsai.ONI
         public uint InterPulseIntervaluSec
         {
             get { return ipi; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.IPI, duration(value)); ipi = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.IPI, duration(value)); ipi = value; }
         }
 
         private uint pulse_phase_two_duration_usec;
@@ -159,7 +159,7 @@ namespace Bonsai.ONI
         public uint PulsePhase2DurationuSec
         {
             get { return pulse_phase_two_duration_usec; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEDUR2, duration(value)); pulse_phase_two_duration_usec = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEDUR2, duration(value)); pulse_phase_two_duration_usec = value; }
         }
 
         private uint pulse_period_usec;
@@ -168,7 +168,7 @@ namespace Bonsai.ONI
         public uint PulsePerioduSec
         {
             get { return pulse_period_usec; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEPERIOD, duration(value)); pulse_period_usec = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEPERIOD, duration(value)); pulse_period_usec = value; }
         }
 
         private uint burst_pulse_count;
@@ -177,7 +177,7 @@ namespace Bonsai.ONI
         public uint BurstPulseCount
         {
             get { return burst_pulse_count; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.BURSTCOUNT, value); burst_pulse_count = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.BURSTCOUNT, value); burst_pulse_count = value; }
         }
 
         private uint inter_burst_interval_usec;
@@ -186,7 +186,7 @@ namespace Bonsai.ONI
         public uint InterBurstIntervaluSec
         {
             get { return inter_burst_interval_usec; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.IBI, duration(value)); inter_burst_interval_usec = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.IBI, duration(value)); inter_burst_interval_usec = value; }
         }
 
         private uint train_burst_count;
@@ -195,7 +195,7 @@ namespace Bonsai.ONI
         public uint TrainBurstCount
         {
             get { return train_burst_count; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRAINCOUNT, value); train_burst_count = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRAINCOUNT, value); train_burst_count = value; }
         }
 
         private uint traindelay;
@@ -204,7 +204,7 @@ namespace Bonsai.ONI
         public uint TrainDelayuSec
         {
             get { return traindelay; }
-            set { oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRAINDELAY, duration(value)); traindelay = value; }
+            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRAINDELAY, duration(value)); traindelay = value; }
         }
 
         private bool poweron = false;
@@ -215,7 +215,7 @@ namespace Bonsai.ONI
             set
             {
                 uint code = value ? (uint)0x01 : (uint)0x00;
-                oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.POWERON, code); poweron = value;
+                oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.POWERON, code); poweron = value;
             }
         }
 
@@ -227,7 +227,7 @@ namespace Bonsai.ONI
             set
             {
                 uint code = value ? (uint)0x01 : (uint)0x00;
-                oni_ref.DAQ.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.ENABLE, code); enable = value;
+                oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.ENABLE, code); enable = value;
             }
         }
     }

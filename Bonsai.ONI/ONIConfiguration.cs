@@ -4,14 +4,21 @@ namespace Bonsai.ONI
 {
     public class ONIConfiguration
     {
+        internal static readonly ONIConfiguration Default = new ONIConfiguration();
+
         public ONIConfiguration()
         {
-            ContextIndex = oni.Context.DefaultIndex;
+            ContextName  = oni.Context.DefaultName;
+            ConfigurationPath = "\\\\.\\xillybus_cmd_32";
+            SignalPath = "\\\\.\\xillybus_signal_8";
+            DataInputPath = "\\\\.\\xillybus_data_read_32";
+            DataOutputPath = "\\\\.\\xillybus_data_write_32";
+            BlockReadSize = 2048;
         }
 
         //[TypeConverter(typeof(SerialPortNameConverter))]
-        [Description("The ONI context index.")]
-        public uint ContextIndex { get; set; }
+        [Description("The ONI context identifer.")]
+        public string ContextName { get; set; }
 
         [Description("The ONI context data input channel path.")]
         public string DataInputPath { get; set; }
@@ -26,6 +33,6 @@ namespace Bonsai.ONI
         public string SignalPath { get; set; }
 
         [Description("The ONI context data input block readsize. Smaller is lower latency. Larger is higher bandwidth.")]
-        public uint BlockReadSize { get; set; }
+        public int BlockReadSize { get; set; }
     }
 }

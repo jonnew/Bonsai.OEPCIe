@@ -8,11 +8,11 @@ using System.Threading;
 
 namespace Bonsai.ONI
 {
-    public sealed class ONIDisposable: ICancelable, IDisposable
+    public class ONIContext: ICancelable, IDisposable
     {
         IDisposable resource;
 
-        public ONIDisposable(ONIController oni, IDisposable disposable)
+        public ONIContext(ONIController oni, IDisposable disposable)
         {
             if (oni == null)
             {
@@ -25,11 +25,10 @@ namespace Bonsai.ONI
             }
 
             Environment = oni;
-            DAQ = Environment.DAQ; 
             resource = disposable;
         }
 
-        public oni.Context DAQ { get; private set; }
+        //public oni.Context AcqContext { get; private set; }
         public ONIController Environment { get; private set; }
 
         public bool IsDisposed

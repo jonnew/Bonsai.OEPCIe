@@ -13,44 +13,58 @@ namespace Bonsai.ONI
     public static class ONIManager
     {
         public const string DefaultConfigurationFile = "ONI.config";
-        static readonly Dictionary<uint, Tuple<ONIController, RefCountDisposable>> openContexts 
-            = new Dictionary<uint, Tuple<ONIController, RefCountDisposable>>();
+        //static readonly Dictionary<int, Tuple<ONIController, RefCountDisposable>> openContexts 
+        //    = new Dictionary<int, Tuple<ONIController, RefCountDisposable>>();
+
+        static readonly Dictionary<string, Tuple<ONIController, RefCountDisposable>> openContexts = new Dictionary<string, Tuple<ONIController, RefCountDisposable>>();
         static readonly object openContextsLock = new object();
 
-        public static ONIDisposable ReserveDAQ(uint context_index = 0)
+        public static ONIContext ReserveContext(string context_name)
         {
-            Tuple<ONIController, RefCountDisposable> oni_context;
+            return ReserveContext(context_name, ONIConfiguration.Default);
+        }
+
+        public static ONIContext ReserveContext(string context_name, ONIConfiguration config)
+        {
+            var oni_context = default(Tuple<ONIController, RefCountDisposable>);
 
             lock (openContextsLock)
             {
-                if (!openContexts.TryGetValue(context_index, out oni_context)) // Context has not been opened yet
+                if (string.IsNullOrEmpty(context_name))
                 {
-                    ONIController oni; // Does not call constructor 
+                    if (!string.IsNullOrEmpty(config.ContextName)) context_name = config.ContextName;
+                    else if (openContexts.Count == 1) oni_context = openContexts.Values.Single();
+                    else throw new ArgumentException("An context name must be specified.", "ContextName");
+                }
+
+                if (!openContexts.TryGetValue(context_name, out oni_context)) // Context has not been opened yet
+                {
+                    var final_context_name = config.ContextName;
+                    if (string.IsNullOrEmpty(final_context_name)) final_context_name = context_name;
+
+                    //ONIController oni; // Does not call constructor 
                     var configuration = LoadConfiguration();
-                    if (configuration.Contains(context_index)) // There is a configuration file specifying non-default channel paths
+                    if (configuration.Contains(final_context_name)) // There is a configuration file specifying non-default channel paths
                     {
-                        var config = configuration[context_index]; // Nothing used yet
-                        oni = new ONIController(config.ConfigurationPath, config.DataInputPath, config.SignalPath); 
+                        config = configuration[final_context_name]; // Nothing used yet
                     }
-                    else
-                    {
-                        oni = new ONIController(); // Default params
-                    }
+
+                    var ctx_controller = new ONIController(config.ConfigurationPath, config.DataInputPath, config.DataOutputPath, config.SignalPath, config.BlockReadSize);
 
                     var dispose = Disposable.Create(() =>
                     {
-                        //oni.DAQ.Dispose(false);
-                        openContexts.Remove(context_index);
+                        ctx_controller.Close();
+                        openContexts.Remove(context_name);
                     });
 
                     var ref_count = new RefCountDisposable(dispose);
-                    oni_context = Tuple.Create(oni, ref_count);
-                    openContexts.Add(context_index, oni_context);
-                    return new ONIDisposable(oni, ref_count);
+                    oni_context = Tuple.Create(ctx_controller, ref_count);
+                    openContexts.Add(context_name, oni_context);
+                    return new ONIContext(ctx_controller, ref_count);
                 }
             }
 
-            return new ONIDisposable(oni_context.Item1, oni_context.Item2.GetDisposable()); // New reference
+            return new ONIContext(oni_context.Item1, oni_context.Item2.GetDisposable()); // New reference
         }
 
         public static ONIConfigurationCollection LoadConfiguration()

@@ -11,20 +11,20 @@ namespace Bonsai.ONI.Prototyping
     [Description("Acquires images from PCE Camera prototypes (version x.x).")]
     public class PCECameraReader : Source<PCEImage>
     {
-        private ONIDisposable oni_ref; // Reference to global oni configuration set
+        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
         private Dictionary<int, oni.lib.device_t> devices;
         IObservable<PCEImage> source;
 
         public PCECameraReader()
         {
             // Reference to context
-            oni_ref = ONIManager.ReserveDAQ();
+            //oni_ref = ONIManager.ReserveContext();
 
             // Find the hardware clock rate
             var sample_clock_hz = (int)50e6; // TODO: oni_ref.DAQ.AcquisitionClockHz;
 
             // Find all RHD devices
-            devices = oni_ref.DAQ.DeviceMap.Where(pair => pair.Value.id == 10000).ToDictionary(x => x.Key, x => x.Value);
+            devices = oni_ref.AcqContext.DeviceMap.Where(pair => pair.Value.id == 10000).ToDictionary(x => x.Key, x => x.Value);
 
             // Stop here if there are no devices to use
             if (devices.Count == 0)
@@ -33,8 +33,8 @@ namespace Bonsai.ONI.Prototyping
             DeviceIndex = new DeviceIndexSelection();
             DeviceIndex.Indices = devices.Keys.ToArray();
 
-            int rows = (int)oni_ref.DAQ.DeviceMap[DeviceIndex.SelectedIndex].num_reads;
-            int cols = (int)oni_ref.DAQ.DeviceMap[DeviceIndex.SelectedIndex].read_size / 2 - 1; // ushorts, First element is row index
+            int rows = (int)oni_ref.AcqContext.DeviceMap[DeviceIndex.SelectedIndex].num_reads;
+            int cols = (int)oni_ref.AcqContext.DeviceMap[DeviceIndex.SelectedIndex].read_size / 2 - 1; // ushorts, First element is row index
 
             var image_data = new ushort[rows * cols];
 
