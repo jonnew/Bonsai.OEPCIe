@@ -9,64 +9,53 @@ using System.Reactive.Disposables;
 namespace Bonsai.ONI
 {
     [Description("Low-level access to any  device (used for debugging).")]
-    public class GenericDevice : Source<Mat>
+    public class GenericDevice : ONIFrameReaderDevice<Mat>
     {
-        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
-        IObservable<Mat> source;
-        private int hardware_clock_hz;
 
-        public GenericDevice()
+        public GenericDevice() : base(oni.Device.DeviceID.NULL) { }
+
+        int size_k = 1;
+        Depth element_depth = Depth.U8;
+
+        internal override IObservable<Mat> Process(IObservable<oni.Frame> source, ONIContext ctx)
         {
-            // Reference to context
-            this.oni_ref = ONIManager.ReserveContext();
-
-            source = Observable.Create<Mat>(observer =>
+            return source.Select(frame =>
             {
-                EventHandler<FrameReceivedEventArgs> inputReceived;
+                var dat = frame.Data<byte>(DeviceIndex.SelectedIndex, ReadSize);
+                var mat = new Mat(dat.Length, 1, ElementDepth, 1);
 
-                oni_ref.Environment.Start();
-
-                inputReceived = (sender, e) =>
-                {
-                    var frame = e.Value;
-
-                    // If this frame contains data from the selected device_index
-                    if (frame.DeviceIndices.Contains(DeviceIndex)) {
-
-                        var dat = frame.Data<ushort>(DeviceIndex, ReadSize);
-                        var mat = new Mat(1, dat.Length, ElementDepth, 1);
-
-                        using (var header = Mat.CreateMatHeader(dat))
-                        {
-                            CV.Convert(header, mat);
-                        }
-
-                        observer.OnNext(mat);
-                    }
-                };
-
-                oni_ref.Environment.FrameInputReceived += inputReceived;
-                return Disposable.Create(() =>
-                {
-                    oni_ref.Environment.FrameInputReceived -= inputReceived;
-                    oni_ref.Dispose();
-                });
+                return Mat.CreateMatHeader(dat, dat.Length / size_k, 1, element_depth, 1);
             });
         }
-
-        public override IObservable<Mat> Generate()
-        {
-            return source;
-        }
-
-        [Description("The index of the device handled by this node.")]
-        public int DeviceIndex { get; set; }
 
         [Description("The data read size (bytes).")]
         public int ReadSize { get; set; }
 
         [Description("The type of each element the data matrix holds.")]
-        public Depth ElementDepth { get; set; }
+        public Depth ElementDepth {
+            get { return element_depth; }
+            set
+            {
+                element_depth = value;
+                switch (element_depth)
+                {
+                    case Depth.U16:
+                    case Depth.S16:
+                        size_k = 2;
+                        break;
+                    case Depth.F32:
+                    case Depth.S32:
+                        size_k = 4;
+                        break;
+                    case Depth.F64:
+                        size_k = 8;
+                        break;
+                    default:
+                        size_k = 1;
+                        break;
+                }
+            }
+        }
 
     }
 }

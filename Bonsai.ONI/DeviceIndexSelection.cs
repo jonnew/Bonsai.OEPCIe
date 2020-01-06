@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Linq;
 
 namespace Bonsai.ONI
 {
@@ -9,15 +10,15 @@ namespace Bonsai.ONI
 
         [Description("The selected device index.")]
         [Range(0, int.MaxValue)]
-        public int SelectedIndex { get; set; } = 0;
+        public int SelectedIndex { get; set; } = -1;
 
-        private int[] indicies;
+        private int[] indices;
         [Description("The valid device indices.")]
         public int[] Indices {
-            get { return indicies; }
+            get { return indices; }
             set {
-                indicies = value;
-                if (needs_init)
+                indices = value;
+                if (needs_init || !value.Contains(SelectedIndex))
                 {
                     SelectedIndex = value[0];
                     needs_init = false;

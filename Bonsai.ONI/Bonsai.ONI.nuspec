@@ -10,8 +10,8 @@
     <projectUrl>https://github.com/jonnew/open-ephys-pcie</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>$description$</description>
-    <copyright>Jon Newman © 2019</copyright>
-    <tags>Bonsai Open-Ephys PCIe ONI Open Neuro Interface</tags>
+    <copyright>Jon Newman © 2020</copyright>
+    <tags>Bonsai Open-Ephys PCIe USB ONI Open Neuro Interface</tags>
     <dependencies>
       <dependency id="Bonsai.System" version="2.3.0" />
     </dependencies>

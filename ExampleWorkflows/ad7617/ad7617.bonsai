@@ -2,11 +2,13 @@
 <WorkflowBuilder Version="2.4.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:q1="clr-namespace:Bonsai.ONI;assembly=Bonsai.ONI"
+                 xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:AD7617Device">
+          <q1:ContextName>ONI0</q1:ContextName>
           <q1:DeviceIndex>
             <q1:SelectedIndex>5</q1:SelectedIndex>
             <q1:Indices>
@@ -18,19 +20,31 @@
         </Combinator>
       </Expression>
       <Expression xsi:type="MemberSelector">
-        <Selector>Data</Selector>
-      </Expression>
-      <Expression xsi:type="MemberSelector">
         <Selector>Clock</Selector>
       </Expression>
       <Expression xsi:type="MemberSelector">
+        <Selector>Data</Selector>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
         <Selector>Time</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:Difference">
+          <dsp:Order>1</dsp:Order>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q1:CreateONIContext">
+          <q1:Name>ONI0</q1:Name>
+          <q1:BlockReadSize>2048</q1:BlockReadSize>
+        </Combinator>
       </Expression>
     </Nodes>
     <Edges>
       <Edge From="0" To="1" Label="Source1" />
       <Edge From="0" To="2" Label="Source1" />
       <Edge From="0" To="3" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>

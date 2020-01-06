@@ -1,5 +1,5 @@
-﻿    using System.Linq;
-    using OpenCV.Net;
+﻿using System.Linq;
+using OpenCV.Net;
 
 namespace Bonsai.ONI
 {
@@ -8,7 +8,7 @@ namespace Bonsai.ONI
     /// </summary>
     public class AD7617DataFrame
     {
-        public AD7617DataFrame(AD7617DataBlock dataBlock, int hardware_clock_hz)
+        public AD7617DataFrame(AD7617DataBlock dataBlock, double hardware_clock_hz)
         {
             Clock = GetClock(dataBlock.Clock);
             Time = GetTime(dataBlock.Clock, hardware_clock_hz);
@@ -20,10 +20,10 @@ namespace Bonsai.ONI
             return Mat.FromArray(data, 1, data.Length, Depth.F64, 1); // TODO: abusing double to fit uint64_t
         }
 
-        Mat GetTime(ulong[] data, int hardware_clock_hz)
+        Mat GetTime(ulong[] data, double hardware_clock_hz)
         {
             var ts = new double[data.Count()];
-            double period_sec = 1.0 / (double)hardware_clock_hz;
+            double period_sec = 1.0 / hardware_clock_hz;
 
             for(int i = 0; i < data.Count(); i++)
                 ts[i] = period_sec * (double)data[i];

@@ -1,28 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reactive.Disposables;
 using System.Xml.Serialization;
 using System.Xml;
 using System.IO;
+
 
 namespace Bonsai.ONI
 {
     public static class ONIManager
     {
         public const string DefaultConfigurationFile = "ONI.config";
-        //static readonly Dictionary<int, Tuple<ONIController, RefCountDisposable>> openContexts 
-        //    = new Dictionary<int, Tuple<ONIController, RefCountDisposable>>();
 
         static readonly Dictionary<string, Tuple<ONIController, RefCountDisposable>> openContexts = new Dictionary<string, Tuple<ONIController, RefCountDisposable>>();
         static readonly object openContextsLock = new object();
 
-        public static ONIContext ReserveContext(string context_name)
-        {
-            return ReserveContext(context_name, ONIConfiguration.Default);
-        }
+        //public static DeviceMapT FindMachingDevices(DeviceMapT map, oni.Device.DeviceID dev_id)
+        //{
+        //    // Find all matching devices
+        //    return map.Where(
+        //        pair => pair.Value.id == (uint)dev_id
+        //    ).ToDictionary(x => x.Key, x => x.Value);
+        //}
+
+        //public static ONIContext ReserveContext(string context_name)
+        //{
+        //    return ReserveContext(context_name, ONIConfiguration.Default);
+        //}
+
 
         public static ONIContext ReserveContext(string context_name, ONIConfiguration config)
         {
@@ -49,11 +55,12 @@ namespace Bonsai.ONI
                         config = configuration[final_context_name]; // Nothing used yet
                     }
 
-                    var ctx_controller = new ONIController(config.ConfigurationPath, config.DataInputPath, config.DataOutputPath, config.SignalPath, config.BlockReadSize);
+                    var ctx_controller = new ONIController(config.DriverName, config.HostIndex, config.DriverArgs());
+                    ctx_controller.AcqContext.SetBlockReadSize(config.BlockReadSize);
 
                     var dispose = Disposable.Create(() =>
                     {
-                        ctx_controller.Close();
+                        //ctx_controller.Close();
                         openContexts.Remove(context_name);
                     });
 
@@ -89,6 +96,5 @@ namespace Bonsai.ONI
                 serializer.Serialize(writer, configuration);
             }
         }
-
     }
 }

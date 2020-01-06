@@ -29,13 +29,13 @@ namespace Bonsai.ONI
                 throw new IndexOutOfRangeException();
 
             // [uint64_t local_clock, uint16_t ephys1, uint16_t ephys2, ... , uint16_t aux1, uint16_t aux2, ...]
-            var raw = frame.Data<short>(device_index);
+            var raw = frame.Data<ushort>(device_index);
 
             clock[index] = ((ulong)raw[0] << 48) | ((ulong)raw[1] << 32) | ((ulong)raw[2] << 16) | ((ulong)raw[3] << 0);
 
             for (int chan = 0; chan < NumChannels; chan++)
             {
-                data[chan, index] = raw[chan + 4]; // Start at index 4
+                data[chan, index] = (short)raw[chan + 4]; // Start at index 4
             }
 
             return ++index == SamplesPerBlock;

@@ -8,9 +8,10 @@ using System.Drawing.Design;
 
 namespace Bonsai.ONI
 {
-
     [Description("Controls a single headborne microstimulator circuit.")]
-    public class ElectricalStimulator : Sink<bool>
+    [Combinator(MethodName = "Process")]
+    [WorkflowElementCategory(ElementCategory.Sink)]
+    public class ElectricalStimulator : ONIDevice
     {
         // Control registers (see oedevices.h)
         public enum Register
@@ -34,44 +35,35 @@ namespace Bonsai.ONI
             RESET = 16, // Reset all parameters to default
         }
 
+        // Dictionary containing registers and values that need to be updated when possible
+        Dictionary<Register, uint> RegistersToUpdate;
 
-        private ONIDisposableContext oni_ref; // Reference to global oni configuration set
-        private Dictionary<int, oni.lib.device_t> devices;
-
-        public override IObservable<bool> Process(IObservable<bool> source)
+        public  IObservable<Tuple<ONIContext, bool>> Process(IObservable<Tuple<ONIContext, bool>> source)
         {
-            return source.Do(
-                input =>
-                {
-                    if (input)
-                        oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRIGGER, 0x01);
-                });
+            return source.Do(input =>
+            {
+                // Get device inidicies
+                var devices = ObservableFrame.FindMachingDevices(input.Item1, ID);
+                if (devices.Count == 0) throw new oni.ONIException(oni.lib.Error.DEVID);
+                DeviceIndex.Indices = devices.Keys.ToArray();
+
+                // If there are changed registers, update
+                foreach (var x in RegistersToUpdate)
+                    input.Item1.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (uint)x.Key, x.Value);
+
+                // We have updated registers
+                RegistersToUpdate.Clear();
+
+                // Stim if requested
+                if (input.Item2)
+                    input.Item1.Environment.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRIGGER, 0x01);
+            });
         }
 
         // Setup context etc
-        public ElectricalStimulator() //oni.Context context, uint (uint)DeviceIndex.SelectedIndex)
+        public ElectricalStimulator() : base(oni.Device.DeviceID.ESTIM)
         {
-            // Reference to context
-            this.oni_ref = ONIManager.LinkContext(ctx_name);
-
-            // Find all estim devices
-            devices = oni_ref.AcqContext.DeviceMap.Where(pair => pair.Value.id == (uint)oni.Device.DeviceID.ESTIM).ToDictionary(x => x.Key, x => x.Value);
-
-            // Stop here if there are no estim devices to use
-            if (devices.Count == 0)
-                throw new oni.ONIException((int)oni.lib.Error.DEVIDX);
-
-            // Set device selection
-            DeviceIndex = new DeviceIndexSelection();
-            DeviceIndex.Indices = devices.Keys.ToArray();
-
-            // Default configuration
-            Reset();
-        }
-
-        void Reset()
-        {
-            ResetStimulatorStateMachine();
+            RegistersToUpdate = new Dictionary<Register, uint>(16);
             Phase1CurrentuA = 500;
             Phase2CurrentuA = -500;
             PulsePhase1DurationuSec = 10;
@@ -87,27 +79,11 @@ namespace Bonsai.ONI
             RestingCurrentuA = 0;
         }
 
-        void ResetStimulatorStateMachine()
-        {
-            // TODO: device index ignore currently
-            oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.RESET, 0x01);
-        }
-
         private uint currentK(double currentuA)
         {
             const double k = 1500 / 127;
             return (uint)((currentuA + 1500) / k);
         }
-
-        // TODO: fix in firmware
-        private uint duration(uint duration_10usecs)
-        {
-            return duration_10usecs / 10;
-        }
-
-        [Editor("Bonsai.ONI.Design.DeviceIndexCollectionEditor, Bonsai.ONI.Design", typeof(UITypeEditor))]
-        [Description("The electrical stimulator device handled by this node.")]
-        public DeviceIndexSelection DeviceIndex { get; set; }
 
         private double pulse_phase_one_current_uA;
         [Description("Phase 1 pulse current (-1500 to +1500 uA).")]
@@ -115,7 +91,14 @@ namespace Bonsai.ONI
         public double Phase1CurrentuA
         {
             get { return pulse_phase_one_current_uA; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.CURRENT1, currentK(value)); pulse_phase_one_current_uA = value; }
+            set
+            {
+                pulse_phase_one_current_uA = value;
+                if (RegistersToUpdate.ContainsKey(Register.CURRENT1))
+                    RegistersToUpdate[Register.CURRENT1] = currentK(value);
+                else
+                    RegistersToUpdate.Add(Register.CURRENT1, currentK(value));
+            }
         }
 
         private double pulse_phase_two_current_uA;
@@ -124,7 +107,14 @@ namespace Bonsai.ONI
         public double Phase2CurrentuA
         {
             get { return pulse_phase_two_current_uA; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.CURRENT2, currentK(value)); pulse_phase_two_current_uA = value; }
+            set
+            {
+                pulse_phase_two_current_uA = value;
+                if (RegistersToUpdate.ContainsKey(Register.CURRENT2))
+                    RegistersToUpdate[Register.CURRENT2] = currentK(value);
+                else
+                    RegistersToUpdate.Add(Register.CURRENT2, currentK(value));
+            }
         }
 
         private double resting_current_uA;
@@ -132,7 +122,14 @@ namespace Bonsai.ONI
         public double RestingCurrentuA
         {
             get { return resting_current_uA; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.RESTCURR, currentK(value)); resting_current_uA = value; }
+            set
+            {
+                resting_current_uA = value;
+                if (RegistersToUpdate.ContainsKey(Register.RESTCURR))
+                    RegistersToUpdate[Register.RESTCURR] = currentK(value);
+                else
+                    RegistersToUpdate.Add(Register.RESTCURR, currentK(value));
+            }
         }
 
         private uint pulse_phase_one_duration_usec;
@@ -141,7 +138,14 @@ namespace Bonsai.ONI
         public uint PulsePhase1DurationuSec
         {
             get { return pulse_phase_one_duration_usec; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEDUR1, duration(value)); pulse_phase_one_duration_usec = value; }
+            set
+            {
+                pulse_phase_one_duration_usec = value;
+                if (RegistersToUpdate.ContainsKey(Register.PULSEDUR1))
+                    RegistersToUpdate[Register.PULSEDUR1] = value;
+                else
+                    RegistersToUpdate.Add(Register.PULSEDUR1, value);
+            }
         }
 
         private uint ipi;
@@ -150,7 +154,14 @@ namespace Bonsai.ONI
         public uint InterPulseIntervaluSec
         {
             get { return ipi; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.IPI, duration(value)); ipi = value; }
+            set
+            {
+                ipi = value;
+                if (RegistersToUpdate.ContainsKey(Register.IPI))
+                    RegistersToUpdate[Register.IPI] = value;
+                else
+                    RegistersToUpdate.Add(Register.IPI, value);
+            }
         }
 
         private uint pulse_phase_two_duration_usec;
@@ -159,7 +170,14 @@ namespace Bonsai.ONI
         public uint PulsePhase2DurationuSec
         {
             get { return pulse_phase_two_duration_usec; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEDUR2, duration(value)); pulse_phase_two_duration_usec = value; }
+            set
+            {
+                pulse_phase_two_duration_usec = value;
+                if (RegistersToUpdate.ContainsKey(Register.PULSEDUR2))
+                    RegistersToUpdate[Register.PULSEDUR2] = value;
+                else
+                    RegistersToUpdate.Add(Register.PULSEDUR2, value);
+            }
         }
 
         private uint pulse_period_usec;
@@ -168,7 +186,14 @@ namespace Bonsai.ONI
         public uint PulsePerioduSec
         {
             get { return pulse_period_usec; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.PULSEPERIOD, duration(value)); pulse_period_usec = value; }
+            set
+            {
+                pulse_period_usec = value;
+                if (RegistersToUpdate.ContainsKey(Register.PULSEPERIOD))
+                    RegistersToUpdate[Register.PULSEPERIOD] = value;
+                else
+                    RegistersToUpdate.Add(Register.PULSEPERIOD, value);
+            }
         }
 
         private uint burst_pulse_count;
@@ -177,7 +202,14 @@ namespace Bonsai.ONI
         public uint BurstPulseCount
         {
             get { return burst_pulse_count; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.BURSTCOUNT, value); burst_pulse_count = value; }
+            set
+            {
+                burst_pulse_count = value;
+                if (RegistersToUpdate.ContainsKey(Register.BURSTCOUNT))
+                    RegistersToUpdate[Register.BURSTCOUNT] = value;
+                else
+                    RegistersToUpdate.Add(Register.BURSTCOUNT, value);
+            }
         }
 
         private uint inter_burst_interval_usec;
@@ -186,7 +218,14 @@ namespace Bonsai.ONI
         public uint InterBurstIntervaluSec
         {
             get { return inter_burst_interval_usec; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.IBI, duration(value)); inter_burst_interval_usec = value; }
+            set
+            {
+                inter_burst_interval_usec = value;
+                if (RegistersToUpdate.ContainsKey(Register.IBI))
+                    RegistersToUpdate[Register.IBI] = value;
+                else
+                    RegistersToUpdate.Add(Register.IBI, value);
+            }
         }
 
         private uint train_burst_count;
@@ -195,7 +234,14 @@ namespace Bonsai.ONI
         public uint TrainBurstCount
         {
             get { return train_burst_count; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRAINCOUNT, value); train_burst_count = value; }
+            set
+            {
+                train_burst_count = value;
+                if (RegistersToUpdate.ContainsKey(Register.TRAINCOUNT))
+                    RegistersToUpdate[Register.TRAINCOUNT] = value;
+                else
+                    RegistersToUpdate.Add(Register.TRAINCOUNT, value);
+            }
         }
 
         private uint traindelay;
@@ -204,7 +250,14 @@ namespace Bonsai.ONI
         public uint TrainDelayuSec
         {
             get { return traindelay; }
-            set { oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.TRAINDELAY, duration(value)); traindelay = value; }
+            set
+            {
+                traindelay = value;
+                if (RegistersToUpdate.ContainsKey(Register.TRAINDELAY))
+                    RegistersToUpdate[Register.TRAINDELAY] = value;
+                else
+                    RegistersToUpdate.Add(Register.TRAINDELAY, value);
+            }
         }
 
         private bool poweron = false;
@@ -214,8 +267,12 @@ namespace Bonsai.ONI
             get { return poweron; }
             set
             {
+                poweron = value;
                 uint code = value ? (uint)0x01 : (uint)0x00;
-                oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.POWERON, code); poweron = value;
+                if (RegistersToUpdate.ContainsKey(Register.POWERON))
+                    RegistersToUpdate[Register.POWERON] = code;
+                else
+                    RegistersToUpdate.Add(Register.POWERON, code);
             }
         }
 
@@ -226,8 +283,12 @@ namespace Bonsai.ONI
             get { return enable; }
             set
             {
+                enable = value;
                 uint code = value ? (uint)0x01 : (uint)0x00;
-                oni_ref.AcqContext.WriteRegister((uint)DeviceIndex.SelectedIndex, (int)Register.ENABLE, code); enable = value;
+                if (RegistersToUpdate.ContainsKey(Register.POWERON))
+                    RegistersToUpdate[Register.POWERON] = code;
+                else
+                    RegistersToUpdate.Add(Register.POWERON, code);
             }
         }
     }

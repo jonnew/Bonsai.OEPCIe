@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reactive.Disposables;
 using System.Threading;
 
@@ -28,7 +24,6 @@ namespace Bonsai.ONI
             resource = disposable;
         }
 
-        //public oni.Context AcqContext { get; private set; }
         public ONIController Environment { get; private set; }
 
         public bool IsDisposed
@@ -41,6 +36,7 @@ namespace Bonsai.ONI
             var disposable = Interlocked.Exchange(ref resource, null);
             if (disposable != null)
             {
+                Environment.AcqContext.Destroy();
                 disposable.Dispose();
             }
         }
